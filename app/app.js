@@ -1,3 +1,10 @@
+const TRACING_ENABLED = process.env.DD_TRACING_ENABLED === 'true' || process.env.DD_ENABLED === 'true';
+
+if (TRACING_ENABLED) {
+  const tracer = (await import('dd-trace')).default;
+  tracer.init();
+}
+
 import express from "express";
 
 import {

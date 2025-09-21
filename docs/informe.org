@@ -33,7 +33,7 @@
 
 * Arquitectura
 
-** Diagrama de Componentes y Conectores
+* Diagrama de Componentes y Conectores
 
 #+BEGIN_SRC plantuml :file assets/componentes.png :exports results
 @startuml
@@ -42,34 +42,54 @@ skinparam componentStyle rectangle
 
 component "Cliente" as Client
 
-package "Contenedores Docker" {
-  component "Nginx\n(Reverse Proxy)" as Nginx {
-    portin "80 (host:5555)" as p_nginx_in
-    portout "3000" as p_nginx_out
-  }
-  component "API\n(Node.js)" as API {
-    portin "3000" as p_api
-  }
-  component "Base de Datos\n(Archivos JSON)" as DB
-  component "cAdvisor\n(Monitoring)" as CAdvisor {
-    portout "8125 (StatsD)" as p_cadvisor
-  }
-  component "Graphite\n(Métricas)" as Graphite {
-    portin "80 (host:8090)" as p_graphite_http
-    portin "8125/udp" as p_graphite_statsd
-    portin "8126" as p_graphite_pickle
-  }
-  component "Grafana\n(Dashboard)" as Grafana {
-    portin "3000 (host:8081)" as p_grafana
-  }
+component "Contenedores Docker" {
+ portin "5555" as p_nginx_host
+
+ portin "8090" as p_graphite_host
+ portin "8125" as p_graphite_statsd_host
+ portin "8126" as p_graphite_statsd_admin
+
+ portin "80" as p_grafana_host
+
+ portin "8080" as p_cadvisor_host
+
+ component "Nginx\n(Reverse Proxy)" as Nginx {
+   portin "80" as p_nginx_docker
+ }
+ component "API\n(Node.js)" as API {
+   portin "3000" as p_api_docker
+ }
+ database "Base de Datos" as DB {
+   folder "app/state" {
+     [accounts.json]
+     [log.json]
+     [rates.json]
+   }
+ }
+
+ component "cAdvisor\n(Monitoring)" as CAdvisor {
+   portin "8080" as p_cadvisor_docker
+ }
+ component "Graphite\n(Métricas)" as Graphite {
+   portin "80" as p_graphite_http_docker
+   portin "8125" as p_graphite_statsd_docker
+   portin "8126" as p_graphite_statds_admin_docker
+ }
+ component "Grafana\n(Dashboard)" as Grafana {
+   portin "3000" as p_grafana_docker
+ }
 }
 
-Client --> p_nginx_in : HTTP
-p_nginx_out --> p_api : HTTP
+Client --> p_nginx_host : HTTP
+p_nginx_host --> p_nginx_docker : HTTP
+Nginx --> p_api_docker : HTTP
 API --> DB : I/O de archivos
-p_cadvisor --> p_graphite_statsd : StatsD
-p_grafana --> p_graphite_http : HTTP
-CAdvisor --> [Docker Daemon] : Monitoreo de contenedores
+
+p_graphite_host --> p_graphite_http_docker
+p_graphite_statsd_host --> p_graphite_statsd_docker
+p_graphite_statsd_admin --> p_graphite_statds_admin_docker
+p_grafana_host --> p_grafana_docker
+p_cadvisor_host --> p_cadvisor_docker
 #+END_SRC
 
 #+RESULTS:

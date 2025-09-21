@@ -1,0 +1,32 @@
+#+SETUPFILE: ./org/theme-readtheorg.setup
+#+SETUPFILE: ./org/setup.org
+
+#+BEGIN_EXPORT latex
+\begin{titlepage}
+    \hfill\includegraphics[width=6cm]{assets/logofiuba.jpg}
+    \centering
+    \vfill
+    \Huge \textbf{Trabajo Práctico 1}
+    \vskip0.5cm
+    \Large \textbf{Grupo}
+    \vskip2cm
+    \Large [75.73/TB034] Arquitectura del Software \\
+    Segundo cuatrimestre de 2025\\
+    \vfill
+    \begin{tabular}{ | l | l | l | }
+      \hline
+      Alumno & Padrón & Email \\ \hline
+      CASTRO MARTINEZ, Jose Ignacio & 106957 & jcastrom@fi.uba.ar \\ \hline
+      DEALBERA, Pablo Andres & 106858 & pdealbera@fi.uba.ar \\ \hline
+      FIGUEROA RODRIGUEZ, Andrea Emperatriz & 110450 & afigueroa@fi.uba.ar \\ \hline
+      RICALDI REBATA, Brayan Alexander & 103344 & bricaldi@fi.uba.ar \\ \hline
+    \end{tabular}
+    \vfill
+\end{titlepage}
+\renewcommand{\contentsname}{Índice}
+\tableofcontents
+\newpage
+\definecolor{bg}{rgb}{0.95,0.95,0.95}
+#+END_EXPORT
+
+* Introducción

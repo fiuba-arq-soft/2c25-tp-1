@@ -41,18 +41,34 @@
 skinparam componentStyle rectangle
 
 component "Cliente" as Client
-component "Nginx\n(Reverse Proxy)" as Nginx
-component "API\n(Node.js)" as API
-component "Base de Datos\n(Archivos JSON)" as DB
-component "cAdvisor\n(Monitoring)" as CAdvisor
-component "Graphite\n(Métricas)" as Graphite
-component "Grafana\n(Dashboard)" as Grafana
 
-Client --> Nginx : HTTP (puerto 5555)
-Nginx --> API : HTTP (puerto 3000)
+package "Contenedores Docker" {
+  component "Nginx\n(Reverse Proxy)" as Nginx {
+    portin "80 (host:5555)" as p_nginx_in
+    portout "3000" as p_nginx_out
+  }
+  component "API\n(Node.js)" as API {
+    portin "3000" as p_api
+  }
+  component "Base de Datos\n(Archivos JSON)" as DB
+  component "cAdvisor\n(Monitoring)" as CAdvisor {
+    portout "8125 (StatsD)" as p_cadvisor
+  }
+  component "Graphite\n(Métricas)" as Graphite {
+    portin "80 (host:8090)" as p_graphite_http
+    portin "8125/udp" as p_graphite_statsd
+    portin "8126" as p_graphite_pickle
+  }
+  component "Grafana\n(Dashboard)" as Grafana {
+    portin "3000 (host:8081)" as p_grafana
+  }
+}
+
+Client --> p_nginx_in : HTTP
+p_nginx_out --> p_api : HTTP
 API --> DB : I/O de archivos
-CAdvisor --> Graphite : StatsD (puerto 8125)
-Grafana --> Graphite : HTTP (puerto 8090)
+p_cadvisor --> p_graphite_statsd : StatsD
+p_grafana --> p_graphite_http : HTTP
 CAdvisor --> [Docker] : Monitoreo de contenedores
 #+END_SRC
 

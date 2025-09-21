@@ -69,7 +69,7 @@ p_nginx_out --> p_api : HTTP
 API --> DB : I/O de archivos
 p_cadvisor --> p_graphite_statsd : StatsD
 p_grafana --> p_graphite_http : HTTP
-CAdvisor --> [Docker] : Monitoreo de contenedores
+CAdvisor --> [Docker Daemon] : Monitoreo de contenedores
 #+END_SRC
 
 #+RESULTS:

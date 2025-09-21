@@ -1,0 +1,189 @@
+#+TITLE: Ejemplos de Sintaxis Org Mode
+#+AUTHOR: Equipo de Desarrollo
+#+DATE: <2025-08-31>
+
+* Introducción
+
+Este archivo contiene ejemplos de la sintaxis más común de Org Mode que se utiliza en este proyecto. Mirar con el tab de ~Code~ en vez de ~Preview~ para ver el código fuente.
+
+* Encabezados y Estructura
+
+** Encabezado de Nivel 2
+*** Encabezado de Nivel 3
+**** Encabezado de Nivel 4
+
+* Texto con Formato
+
+Puedes usar *negrita*, /cursiva/, =código=, ~verbatim~, +tachado+.
+
+También puedes crear +_combinaciones_+ de formato.
+
+* Listas
+
+** Listas No Ordenadas
+- Elemento 1
+- Elemento 2
+  - Sub-elemento 2.1
+  - Sub-elemento 2.2
+- Elemento 3
+
+** Listas Ordenadas
+1. Primer elemento
+2. Segundo elemento
+   1. Sub-elemento ordenado
+   2. Otro sub-elemento
+3. Tercer elemento
+
+** Lista de Tareas
+- [ ] Tarea pendiente
+- [X] Tarea completada
+- [-] Tarea en progreso
+
+* Enlaces e Imágenes
+
+** Enlaces
+- Enlace a [[https://orgmode.org][Org Mode]]
+- Enlace interno a [[*Listas][la sección de listas]]
+- Enlace a archivo: [[file:informe.org][Archivo principal]]
+
+** Imágenes
+#+CAPTION: Diagrama de ejemplo
+#+ATTR_HTML: :width 400px
+#+ATTR_LATEX: :width 8cm
+[[./assets/arch-1.png]]
+
+* Tablas
+
+** Tabla Simple
+| Nombre | Edad | Ciudad |
+|--------+------+--------|
+| Juan   |   25 | Madrid |
+| María  |   30 | Barcelona |
+| Pedro  |   35 | Valencia |
+
+** Tabla con Formato
+#+CAPTION: Tabla de ejemplo con formato
+#+ATTR_LATEX: :align l|c|r
+| Izquierda | Centro | Derecha |
+|-----------+--------+---------|
+| Texto     | Texto  | Texto   |
+| Más texto | Más    | Más     |
+
+* Bloques de Código
+
+** Código Inline
+Puedes incluir código inline como =print("Hola Mundo")= o ~sudo apt update~.
+
+** Bloques de Código
+#+NAME: ejemplo-python
+#+BEGIN_SRC python :results output :exports both
+print("Hola desde Python!")
+for i in range(3):
+    print(f"Número: {i}")
+#+END_SRC
+
+#+RESULTS: ejemplo-python
+: Hola desde Python!
+: Número: 0
+: Número: 1
+: Número: 2
+
+** Código sin Ejecutar
+#+BEGIN_SRC bash :exports code
+# Este código no se ejecuta automáticamente
+echo "Comando de ejemplo"
+ls -la
+#+END_SRC
+
+* Diagramas PlantUML
+
+** Diagrama de Componentes
+#+BEGIN_SRC plantuml :file assets/ejemplo-componentes.png :exports results
+@startuml
+!theme plain
+skinparam componentStyle rectangle
+
+component "Frontend" as FE
+component "Backend" as BE
+component "Base de Datos" as DB
+
+FE --> BE : HTTP
+BE --> DB : SQL
+#+END_SRC
+
+** Diagrama de Secuencia
+#+BEGIN_SRC plantuml :file assets/ejemplo-secuencia.png :exports results
+@startuml
+actor Usuario
+participant Frontend
+participant Backend
+database BaseDatos
+
+Usuario -> Frontend: Solicitud
+Frontend -> Backend: Procesar
+Backend -> BaseDatos: Consultar
+BaseDatos --> Backend: Resultado
+Backend --> Frontend: Respuesta
+Frontend --> Usuario: Mostrar
+#+END_SRC
+
+* Exportación LaTeX
+
+** Configuración de Página
+#+BEGIN_EXPORT latex
+\thispagestyle{empty}
+#+END_EXPORT
+
+** Ecuaciones Matemáticas
+Inline: $E = mc^2$
+
+Bloque:
+#+BEGIN_EXPORT latex
+\begin{equation}
+\sum_{i=1}^{n} x_i = \int_{0}^{1} f(x) \, dx
+\end{equation}
+#+END_EXPORT
+
+** Código LaTeX Personalizado
+#+BEGIN_EXPORT latex
+\begin{itemize}
+\item Elemento personalizado
+\item Otro elemento
+\end{itemize}
+#+END_EXPORT
+
+* Notas al Pie y Referencias
+
+Este es un ejemplo de nota al pie[fn:1].
+
+También puedes citar referencias bibliográficas[cite:@orgmode2023].
+
+* Propiedades y Metadatos
+
+** Propiedades del Documento
+#+PROPERTY: header-args :tangle yes
+#+PROPERTY: header-args:python :session *python*
+
+** TODO Items
+*** TODO Implementar funcionalidad X
+DEADLINE: <2025-09-15>
+- [ ] Paso 1
+- [ ] Paso 2
+
+*** DONE Funcionalidad Y completada
+CLOSED: [2025-08-30]
+
+* Configuración de Exportación
+
+#+OPTIONS: toc:2 num:3 date:nil author:nil
+#+LATEX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage{geometry}
+#+LATEX_HEADER: \geometry{margin=2.5cm}
+
+* Footnotes
+
+[fn:1] Esta es la nota al pie correspondiente.
+
+* Referencias
+
+[cite:@orgmode2023] Org Mode Manual, 2023.

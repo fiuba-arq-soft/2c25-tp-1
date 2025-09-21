@@ -1,0 +1,96 @@
+#+SETUPFILE: ./org/theme-readtheorg.setup
+#+SETUPFILE: ./org/setup.org
+
+#+BEGIN_EXPORT latex
+\begin{titlepage}
+    \hfill\includegraphics[width=6cm]{assets/logofiuba.jpg}
+    \centering
+    \vfill
+    \Huge \textbf{Trabajo Práctico 1}
+    \vskip0.5cm
+    \Large \textbf{Grupo}
+    \vskip2cm
+    \Large [75.73/TB034] Arquitectura del Software \\
+    Segundo cuatrimestre de 2025\\
+    \vfill
+    \begin{tabular}{ | l | l | l | }
+      \hline
+      Alumno & Padrón & Email \\ \hline
+      CASTRO MARTINEZ, Jose Ignacio & 106957 & jcastrom@fi.uba.ar \\ \hline
+      DEALBERA, Pablo Andres & 106858 & pdealbera@fi.uba.ar \\ \hline
+      FIGUEROA RODRIGUEZ, Andrea Emperatriz & 110450 & afigueroa@fi.uba.ar \\ \hline
+      RICALDI REBATA, Brayan Alexander & 103344 & bricaldi@fi.uba.ar \\ \hline
+    \end{tabular}
+    \vfill
+\end{titlepage}
+\renewcommand{\contentsname}{Índice}
+\tableofcontents
+\newpage
+\definecolor{bg}{rgb}{0.95,0.95,0.95}
+#+END_EXPORT
+
+* Introducción
+
+* Arquitectura
+
+* Diagrama de Componentes y Conectores
+
+#+BEGIN_SRC plantuml :file assets/componentes.png :exports results
+@startuml
+!theme plain
+skinparam componentStyle rectangle
+
+component "Cliente" as Client
+
+component "Contenedores Docker" {
+ portin "5555" as p_nginx_host
+
+ portin "8090" as p_graphite_host
+ portin "8125" as p_graphite_statsd_host
+ portin "8126" as p_graphite_statsd_admin
+
+ portin "80" as p_grafana_host
+
+ portin "8080" as p_cadvisor_host
+
+ component "Nginx\n(Reverse Proxy)" as Nginx {
+   portin "80" as p_nginx_docker
+ }
+ component "API\n(Node.js)" as API {
+   portin "3000" as p_api_docker
+ }
+ database "Base de Datos" as DB {
+   folder "app/state" {
+     [accounts.json]
+     [log.json]
+     [rates.json]
+   }
+ }
+
+ component "cAdvisor\n(Monitoring)" as CAdvisor {
+   portin "8080" as p_cadvisor_docker
+ }
+ component "Graphite\n(Métricas)" as Graphite {
+   portin "80" as p_graphite_http_docker
+   portin "8125" as p_graphite_statsd_docker
+   portin "8126" as p_graphite_statds_admin_docker
+ }
+ component "Grafana\n(Dashboard)" as Grafana {
+   portin "3000" as p_grafana_docker
+ }
+}
+
+Client --> p_nginx_host : HTTP
+p_nginx_host --> p_nginx_docker : HTTP
+Nginx --> p_api_docker : HTTP
+API --> DB : I/O de archivos
+
+p_graphite_host --> p_graphite_http_docker
+p_graphite_statsd_host --> p_graphite_statsd_docker
+p_graphite_statsd_admin --> p_graphite_statds_admin_docker
+p_grafana_host --> p_grafana_docker
+p_cadvisor_host --> p_cadvisor_docker
+#+END_SRC
+
+#+RESULTS:
+[[file:assets/componentes.png]]

@@ -1,0 +1,22 @@
+config:
+  environments:
+    api:
+      target: "http://localhost:5555"
+  processor: "helpers.js"
+  pool: 15
+  phases:
+    - duration: 60
+      arrivalRate: 20
+
+scenarios:
+  - name: per-currency - mixed currencies
+    flow:
+      - function: "setRandomExchange"
+      - post:
+          url: "/exchange"
+          json:
+            baseCurrency: "{{ baseCurrency }}"
+            counterCurrency: "{{ counterCurrency }}"
+            baseAccountId: "1"
+            counterAccountId: "1"
+            baseAmount: "{{ baseAmount }}"

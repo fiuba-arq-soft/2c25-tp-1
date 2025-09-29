@@ -1,0 +1,21 @@
+config:
+  environments:
+    api:
+      target: "http://localhost:5555"
+
+  phases:
+    - name: Spike
+      duration: 20
+      arrivalRate: 200
+
+scenarios:
+  - name: Spike - short burst
+    flow:
+      - post:
+          url: "/exchange"
+          json:
+            baseCurrency: "USD"
+            counterCurrency: "ARS"
+            baseAccountId: "1"
+            counterAccountId: "2"
+            baseAmount: 10

@@ -20,308 +20,28 @@
   "links": [],
   "panels": [
     {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
+      "id": 1,
+      "title": "Responses",
+      "type": "grafana-piechart-panel",
       "datasource": "Graphite",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fill": 7,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
-      "height": "250px",
-      "hiddenSeries": false,
-      "id": 4,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "hideEmpty": true,
-        "max": true,
-        "min": false,
-        "rightSide": true,
-        "show": true,
-        "sideWidth": 250,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "connected",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.3.10",
-      "pointradius": 5,
-      "points": true,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": true,
-      "steppedLine": false,
       "targets": [
-        {
-          "refCount": 0,
-          "refId": "B",
-          "target": "aliasByMetric(stats.gauges.$server.scenarioCounts.*)",
-          "textEditor": false
-        }
+        { "refId": "A", "target": "alias(stats_counts.response.200, '200 OK')" },
+        { "refId": "B", "target": "alias(stats_counts.response.400, '400')" },
+        { "refId": "C", "target": "alias(stats_counts.response.500, '500')" }
       ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Scenarios launched (stacked)",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "rps",
-          "label": "",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
+      "options": { "legend": { "displayMode": "table" } }
     },
     {
-      "aliasColors": {
-        "Completed": "#7EB26D",
-        "Errored": "#BF1B00",
-        "Errors count": "#BF1B00",
-        "Pending": "#447EBC",
-        "Requests completed": "#7EB26D",
-        "Limited": "#FDDA0D"
-      },
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "Graphite",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fill": 7,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 7
-      },
-      "height": "250",
-      "hiddenSeries": false,
-      "id": 5,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "hideEmpty": false,
-        "max": true,
-        "min": false,
-        "rightSide": true,
-        "show": true,
-        "sideWidth": 250,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "connected",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.3.10",
-      "pointradius": 5,
-      "points": true,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": true,
-      "steppedLine": false,
-      "targets": [
-        {
-          "refId": "B",
-          "target": "alias(sumSeries(stats.gauges.$server.errors.*), 'Errored')",
-          "textEditor": true
-        },
-        {
-          "refId": "A",
-          "target": "alias(stats.gauges.$server.codes.200, 'Completed')"
-        },
-        {
-          "refId": "C",
-          "target": "alias(stats.gauges.$server.pendingRequests, 'Pending')"
-        },
-        {
-          "refId": "D",
-          "target": "alias(stats.gauges.$server.codes.429, 'Limited')"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Requests state (stacked)",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "Graphite",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 14
-      },
-      "height": "250px",
-      "hiddenSeries": false,
       "id": 3,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "hideEmpty": true,
-        "hideZero": false,
-        "max": true,
-        "min": false,
-        "rightSide": true,
-        "show": true,
-        "sideWidth": 250,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "connected",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.3.10",
-      "pointradius": 5,
-      "points": true,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
+      "title": "Transfer duration",
+      "type": "timeseries",
+      "datasource": "Graphite",
       "targets": [
-        {
-          "refCount": 0,
-          "refId": "C",
-          "target": "alias(stats.gauges.$server.scenarioDuration.max, 'Upper')"
-        },
-        {
-          "refCount": 0,
-          "refId": "B",
-          "target": "alias(stats.gauges.$server.scenarioDuration.median, 'Median')"
-        }
+        { "refId": "A", "target": "alias(stats.timers.arVault.transfer.duration.mean, 'mean')" },
+        { "refId": "B", "target": "alias(stats.timers.arVault.transfer.duration.median, 'median')" },
+        { "refId": "C", "target": "alias(stats.timers.arVault.transfer.duration.upper_90, 'p90')" },
+        { "refId": "D", "target": "alias(stats.timers.arVault.transfer.duration.std, 'std')" }
       ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Response time (client-side)",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
       "yaxes": [
         {
           "format": "ms",
@@ -346,110 +66,27 @@
       }
     },
     {
-      "aliasColors": {
-        "Memory": "#EAB839"
-      },
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
+      "id": 4,
+      "title": "Exchange duration",
+      "type": "timeseries",
       "datasource": "Graphite",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 21
-      },
-      "height": "250px",
-      "hiddenSeries": false,
-      "hideTimeOverride": false,
-      "id": 1,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "hideEmpty": true,
-        "hideZero": false,
-        "max": true,
-        "min": false,
-        "rightSide": true,
-        "show": true,
-        "sideWidth": 250,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "connected",
-      "options": {
-        "alertThreshold": true
-      },
-      "percentage": false,
-      "pluginVersion": "7.3.10",
-      "pointradius": 5,
-      "points": true,
-      "renderer": "flot",
-      "seriesOverrides": [
-        {
-          "alias": "asPercent(stats.gauges.cadvisor.exchange-api-1.memory_usage, 34359738368)",
-          "yaxis": 1
-        }
-      ],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
       "targets": [
-        {
-          "hide": false,
-          "refCount": 0,
-          "refId": "C",
-          "target": "alias(removeBelowValue(asPercent(derivative(keepLastValue(stats.gauges.cadvisor.$container.cpu_cumulative_usage, 100)), 10000000000), 0.0001), 'CPU')",
-          "textEditor": false
-        },
-        {
-          "hide": false,
-          "refCount": 0,
-          "refId": "B",
-          "target": "alias(asPercent(stats.gauges.cadvisor.$container.memory_working_set, 34359738368), 'Memory')"
-        }
+        { "refId": "A", "target": "alias(stats.timers.arVault.exchange.request.duration.mean, 'mean')" },
+        { "refId": "B", "target": "alias(stats.timers.arVault.exchange.request.duration.median, 'median')" },
+        { "refId": "C", "target": "alias(stats.timers.arVault.exchange.request.duration.upper_90, 'p90')" },
+        { "refId": "D", "target": "alias(stats.timers.arVault.exchange.request.duration.std, 'std')" }
       ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Resources",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
       "yaxes": [
         {
-          "format": "percent",
-          "label": null,
+          "format": "ms",
+          "label": "",
           "logBase": 1,
           "max": null,
           "min": "0",
           "show": true
         },
         {
-          "format": "Bps",
+          "format": "short",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -461,6 +98,48 @@
         "align": false,
         "alignLevel": null
       }
+    },
+    {
+      "id": 5,
+      "title": "Scenario duration",
+      "type": "timeseries",
+      "datasource": "Graphite",
+      "targets": [
+        { "refId": "A", "target": "alias(stats.gauges.arVault.scenarioDuration.median, 'median')" },
+        { "refId": "B", "target": "alias(stats.gauges.arVault.scenarioDuration.p90, 'p90')" },
+        { "refId": "C", "target": "alias(stats.gauges.arVault.scenarioDuration.std, 'std')" }
+      ],
+      "yaxes": [
+        {
+          "format": "ms",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "id": 6,
+      "title": "ArVault accounts balances",
+      "type": "timeseries",
+      "datasource": "Graphite",
+      "targets": [
+        { "refId": "A", "target": "aliasByNode(stats.gauges.arVault.account.$cuentas.balance, -2)" }
+      ]
     }
   ],
   "refresh": "5s",
@@ -470,11 +149,30 @@
   "templating": {
     "list": [
       {
+        "name": "cuentas",
+        "label": "Cuentas",
+        "type": "custom",
+        "query": "1,2,3,4",
+        "current": {
+          "selected": true,
+          "text": "ARS",
+          "value": "1"
+        },
+        "includeAll": true,
+        "multi": true,
+        "options": [
+          { "text": "ARS", "value": "1", "selected": true },
+          { "text": "BRL", "value": "4", "selected": false },
+          { "text": "USD", "value": "2", "selected": false },
+          { "text": "EUR", "value": "3", "selected": false }
+        ]
+      },
+      {
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "artillery-api",
-          "value": "artillery-api"
+          "text": "arVault",
+          "value": "arVault"
         },
         "error": null,
         "hide": 0,
@@ -485,11 +183,11 @@
         "options": [
           {
             "selected": true,
-            "text": "artillery-api",
-            "value": "artillery-api"
+            "text": "arVault",
+            "value": "arVault"
           }
         ],
-        "query": "artillery-api",
+        "query": "arVault",
         "skipUrlSync": false,
         "type": "custom"
       },
@@ -497,8 +195,8 @@
         "allValue": null,
         "current": {
           "selected": false,
-          "text": "exchange-api-1",
-          "value": "exchange-api-1"
+          "text": "exchange_api_1",
+          "value": "exchange_api_1"
         },
         "error": null,
         "hide": 0,
@@ -509,41 +207,41 @@
         "options": [
           {
             "selected": true,
-            "text": "exchange-api-1",
-            "value": "exchange-api-1"
+            "text": "exchange_api_1",
+            "value": "exchange_api_1"
           },
           {
             "selected": false,
-            "text": "exchange-api-2",
-            "value": "exchange-api-2"
+            "text": "exchange_api_2",
+            "value": "exchange_api_2"
           },
           {
             "selected": false,
-            "text": "exchange-api-3",
-            "value": "exchange-api-3"
+            "text": "exchange_api_3",
+            "value": "exchange_api_3"
           },
           {
             "selected": false,
-            "text": "exchange-cadvisor-1",
-            "value": "exchange-cadvisor-1"
+            "text": "exchange_cadvisor_1",
+            "value": "exchange_cadvisor_1"
           },
           {
             "selected": false,
-            "text": "exchange-grafana-1",
-            "value": "exchange-grafana-1"
+            "text": "exchange_grafana_1",
+            "value": "exchange_grafana_1"
           },
           {
             "selected": false,
-            "text": "exchange-graphite-1",
-            "value": "exchange-graphite-1"
+            "text": "exchange_graphite_1",
+            "value": "exchange_graphite_1"
           },
           {
             "selected": false,
-            "text": "exchange-nginx-1",
-            "value": "exchange-nginx-1"
+            "text": "exchange_nginx_1",
+            "value": "exchange_nginx_1"
           }
         ],
-        "query": "exchange-api-1, exchange-api-2, exchange-api-3, exchange-cadvisor-1, exchange-grafana-1, exchange-graphite-1,  exchange-nginx-1, exchange_bbox_1",
+        "query": "exchange_api_1, exchange_api_2, exchange_api_3, exchange_cadvisor_1, exchange_grafana_1, exchange_graphite_1,  exchange_nginx_1, exchange_bbox_1",
         "queryValue": "",
         "skipUrlSync": false,
         "type": "custom"
@@ -567,7 +265,7 @@
       "2h",
       "1d"
     ],
-    "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
+    "time_options": ["3m", "5m", "15m", "1h", "6h", "12h", "24h", "2d", "7d", "30d"]
   },
   "timezone": "",
   "title": "Main dashboard",

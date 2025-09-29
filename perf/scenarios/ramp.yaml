@@ -1,0 +1,24 @@
+config:
+  environments:
+    api:
+      target: "http://localhost:5555"
+
+  pool: 30
+
+  phases:
+    - name: Ramp
+      duration: 60
+      arrivalRate: 1
+      rampTo: 20
+
+scenarios:
+  - name: Ramp - exchange
+    flow:
+      - post:
+          url: "/exchange"
+          json:
+            baseCurrency: "USD"
+            counterCurrency: "ARS"
+            baseAccountId: "2"
+            counterAccountId: "1"
+            baseAmount: 10

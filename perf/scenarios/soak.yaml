@@ -1,0 +1,23 @@
+config:
+  environments:
+    api:
+      target: "http://localhost:5555"
+
+  pool: 10
+
+  phases:
+    - name: Soak
+      duration: 300
+      arrivalRate: 3
+
+scenarios:
+  - name: Soak - steady load
+    flow:
+      - post:
+          url: "/exchange"
+          json:
+            baseCurrency: "USD"
+            counterCurrency: "ARS"
+            baseAccountId: "1"
+            counterAccountId: "2"
+            baseAmount: 10

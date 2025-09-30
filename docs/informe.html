@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es">
 <head>
-<!-- 2025-09-28 Sun 20:27 -->
+<!-- 2025-09-28 Sun 21:19 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
@@ -24,210 +24,286 @@
 <h2>&Iacute;ndice</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org9131bca">1. Introducción</a>
+<li><a href="#org8007e65">1. Introducción</a>
 <ul>
-<li><a href="#org85ff382">1.1. Contexto (startup arVault).</a></li>
-<li><a href="#org2e2d662">1.2. Objetivos del TP.</a></li>
-<li><a href="#org189a023">1.3. Alcance del análisis.</a></li>
+<li><a href="#org6e76c15">1.1. Contexto (startup arVault).</a></li>
+<li><a href="#org6256c7c">1.2. Objetivos del TP.</a></li>
+<li><a href="#orgb9a6812">1.3. Alcance del análisis.</a></li>
 </ul>
 </li>
-<li><a href="#org36f25ef">2. QA identificados</a>
+<li><a href="#org96742f6">2. QAs identificados</a>
 <ul>
-<li><a href="#orge807ea9">2.1. Listado de atributos de calidad.</a></li>
-<li><a href="#orgdc3f6d6">2.2. QA clave + justificación.</a></li>
+<li><a href="#org4e3b349">2.1. QAs clave y justificación.</a>
+<ul>
+<li><a href="#orgdf5753f">2.1.1. Disponibilidad</a></li>
+<li><a href="#org6875fa1">2.1.2. Escalabilidad (Elasticidad)</a></li>
+<li><a href="#org5158797">2.1.3. Visibilidad</a></li>
+<li><a href="#org5048a62">2.1.4. Seguridad</a></li>
 </ul>
 </li>
-<li><a href="#org2a0e76c">3. Arquitectura base</a>
+<li><a href="#org778f46f">2.2. Caso base y como cumplen estos QAs claves</a>
 <ul>
-<li><a href="#org7a7fd4e">3.1. Diagrama C&amp;C inicial.</a></li>
-<li><a href="#org676b096">3.2. Análisis de decisiones del dev original y su impacto en QA.</a></li>
-<li><a href="#orga30dc86">3.3. Crítica.</a></li>
+<li><a href="#org29f2c2b">2.2.1. Disponibilidad</a></li>
+<li><a href="#orga1b9928">2.2.2. Escalabilidad (Elasticidad)</a></li>
+<li><a href="#orgc0255d0">2.2.3. Visibilidad</a></li>
+<li><a href="#orgfc3e7e7">2.2.4. Seguridad</a></li>
 </ul>
 </li>
-<li><a href="#org0be1689">4. Metodología de pruebas</a>
-<ul>
-<li><a href="#org600431d">4.1. Herramientas usadas (Artillery, Grafana, etc.).</a></li>
-<li><a href="#org9db317e">4.2. Escenarios de carga diseñados.</a></li>
-<li><a href="#org0a0ee6d">4.3. Métricas recolectadas.</a></li>
 </ul>
 </li>
-<li><a href="#orgb7af807">5. Resultados – Caso base</a>
+<li><a href="#orgec54494">3. Arquitectura base</a>
 <ul>
-<li><a href="#orgd85ac29">5.1. Screenshots de dashboards.</a></li>
-<li><a href="#org89fd98c">5.2. Interpretación de resultados.</a></li>
+<li><a href="#org7741694">3.1. Diagrama C&amp;C inicial.</a></li>
+<li><a href="#org82c92fa">3.2. Análisis de decisiones del dev original y su impacto en QA.</a></li>
+<li><a href="#orgf7b42df">3.3. Crítica.</a></li>
 </ul>
 </li>
-<li><a href="#org7495281">6. Propuestas de mejora</a>
+<li><a href="#orga799971">4. Metodología de pruebas</a>
 <ul>
-<li><a href="#orgcc4418c">6.1. Tácticas aplicadas.</a></li>
-<li><a href="#org8c56a3a">6.2. Justificación de por qué se eligieron.</a></li>
-<li><a href="#org6bfc507">6.3. Diagramas C&amp;C modificados.</a></li>
+<li><a href="#orgee21ceb">4.1. Herramientas usadas (Artillery, Grafana, etc.).</a></li>
+<li><a href="#orga338f15">4.2. Escenarios de carga diseñados.</a></li>
+<li><a href="#orgdcdb715">4.3. Métricas recolectadas.</a></li>
 </ul>
 </li>
-<li><a href="#org2fbc7e7">7. Resultados – Casos mejorados</a>
+<li><a href="#org9544a65">5. Resultados – Caso base</a>
 <ul>
-<li><a href="#org3682431">7.1. Screenshots comparativos.</a></li>
-<li><a href="#org522a0b5">7.2. Análisis de impacto sobre QA.</a></li>
-<li><a href="#orgc298c96">7.3. Trade-offs detectados.</a></li>
+<li><a href="#org0086bfd">5.1. Screenshots de dashboards.</a></li>
+<li><a href="#orge22cbf1">5.2. Interpretación de resultados.</a></li>
 </ul>
 </li>
-<li><a href="#orgd0a0296">8. Conclusiones</a>
+<li><a href="#org8db6a5d">6. Propuestas de mejora</a>
 <ul>
-<li><a href="#org62198bb">8.1. Resumen de hallazgos.</a></li>
-<li><a href="#org8d423a0">8.2. Beneficios y limitaciones de las mejoras.</a></li>
-<li><a href="#org995dd06">8.3. Futuro (ej: pasar a DB externa en TP2).</a></li>
+<li><a href="#org4b9a7b7">6.1. Tácticas aplicadas.</a></li>
+<li><a href="#org6c9fb95">6.2. Justificación de por qué se eligieron.</a></li>
+<li><a href="#org76b1088">6.3. Diagramas C&amp;C modificados.</a></li>
 </ul>
 </li>
-<li><a href="#orgc8c4ae6">9. Anexos</a>
+<li><a href="#orgea1107a">7. Resultados – Casos mejorados</a>
 <ul>
-<li><a href="#org0c9c59c">9.1. Configuraciones de escenarios de Artillery.</a></li>
-<li><a href="#orgcfb2191">9.2. Configs modificadas de Nginx, Docker Compose, etc.</a></li>
+<li><a href="#orgee809cb">7.1. Screenshots comparativos.</a></li>
+<li><a href="#org95d106e">7.2. Análisis de impacto sobre QA.</a></li>
+<li><a href="#org806cbfb">7.3. Trade-offs detectados.</a></li>
+</ul>
+</li>
+<li><a href="#org2dcdf9e">8. Conclusiones</a>
+<ul>
+<li><a href="#org96163ed">8.1. Resumen de hallazgos.</a></li>
+<li><a href="#org91518b2">8.2. Beneficios y limitaciones de las mejoras.</a></li>
+<li><a href="#org1eeaeb0">8.3. Futuro (ej: pasar a DB externa en TP2).</a></li>
+</ul>
+</li>
+<li><a href="#org84519c6">9. Anexos</a>
+<ul>
+<li><a href="#orgf02607f">9.1. Configuraciones de escenarios de Artillery.</a></li>
+<li><a href="#orgd81dd08">9.2. Configs modificadas de Nginx, Docker Compose, etc.</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org9131bca" class="outline-2">
-<h2 id="org9131bca"><span class="section-number-2">1.</span> Introducción</h2>
+<div id="outline-container-org8007e65" class="outline-2">
+<h2 id="org8007e65"><span class="section-number-2">1.</span> Introducción</h2>
 <div class="outline-text-2" id="text-1">
 </div>
-<div id="outline-container-org85ff382" class="outline-3">
-<h3 id="org85ff382"><span class="section-number-3">1.1.</span> Contexto (startup arVault).</h3>
+<div id="outline-container-org6e76c15" class="outline-3">
+<h3 id="org6e76c15"><span class="section-number-3">1.1.</span> Contexto (startup arVault).</h3>
 </div>
 
-<div id="outline-container-org2e2d662" class="outline-3">
-<h3 id="org2e2d662"><span class="section-number-3">1.2.</span> Objetivos del TP.</h3>
+<div id="outline-container-org6256c7c" class="outline-3">
+<h3 id="org6256c7c"><span class="section-number-3">1.2.</span> Objetivos del TP.</h3>
 </div>
 
-<div id="outline-container-org189a023" class="outline-3">
-<h3 id="org189a023"><span class="section-number-3">1.3.</span> Alcance del análisis.</h3>
+<div id="outline-container-orgb9a6812" class="outline-3">
+<h3 id="orgb9a6812"><span class="section-number-3">1.3.</span> Alcance del análisis.</h3>
 </div>
 </div>
-<div id="outline-container-org36f25ef" class="outline-2">
-<h2 id="org36f25ef"><span class="section-number-2">2.</span> QA identificados</h2>
+<div id="outline-container-org96742f6" class="outline-2">
+<h2 id="org96742f6"><span class="section-number-2">2.</span> QAs identificados</h2>
 <div class="outline-text-2" id="text-2">
 </div>
-<div id="outline-container-orge807ea9" class="outline-3">
-<h3 id="orge807ea9"><span class="section-number-3">2.1.</span> Listado de atributos de calidad.</h3>
+<div id="outline-container-org4e3b349" class="outline-3">
+<h3 id="org4e3b349"><span class="section-number-3">2.1.</span> QAs clave y justificación.</h3>
+<div class="outline-text-3" id="text-2-1">
+</div>
+<div id="outline-container-orgdf5753f" class="outline-4">
+<h4 id="orgdf5753f"><span class="section-number-4">2.1.1.</span> Disponibilidad</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<p>
+Al ser un servicio de exchange de monedas, asumimos que es un servicio que se utiliza durante todos los dias habiles de la semana en horario cambiario. Por lo tanto, es importante que el servicio se encuentre disponible durante esos horarios para no perder clientes.
+</p>
+
+<p>
+Tambien asumimos que los reclamos pueden venir que los clientes no puedan acceder al servicio o que no puedan realizar operaciones.
+</p>
+</div>
+</div>
+<div id="outline-container-org6875fa1" class="outline-4">
+<h4 id="org6875fa1"><span class="section-number-4">2.1.2.</span> Escalabilidad (Elasticidad)</h4>
+<div class="outline-text-4" id="text-2-1-2">
+<p>
+El servicio debe poder escalar para poder atender la demanda de los clientes, que asumimos debe tener picos de demanda importantes en ciertos momentos del dia (por ejemplo, en la apertura y cierre del horario cambiario) y momentos de baja o nula demanda, por lo que tambien seria deseable que el servicio pueda escalar a cero para evitar costos innecesarios.
+</p>
+</div>
+</div>
+<div id="outline-container-org5158797" class="outline-4">
+<h4 id="org5158797"><span class="section-number-4">2.1.3.</span> Visibilidad</h4>
+<div class="outline-text-4" id="text-2-1-3">
+<p>
+Es importante poder monitorear el estado del sistema para detectar posibles problemas y poder solucionarlos antes de que afecten a los clientes. Ademas, es importante poder monitorear el rendimiento del sistema para poder escalarlo adecuadamente y evitar problemas de disponibilidad.
+</p>
+</div>
+</div>
+<div id="outline-container-org5048a62" class="outline-4">
+<h4 id="org5048a62"><span class="section-number-4">2.1.4.</span> Seguridad</h4>
+<div class="outline-text-4" id="text-2-1-4">
+<p>
+Es fundamental que el sistema sea seguro para evitar posibles ataques que puedan comprometer la integridad del sistema, la privacidad de los datos de los clientes o perdida/robo de dinero. Incluso pensando que debemos tambien tener en cuenta marcos regulatorios sobre el manejo de datos personales y financieros. Tambien entendemos del enunciado que es importante la reputacion del sistema, y esto podria verse muy dañado en caso de que haya una brecha de seguridad.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org778f46f" class="outline-3">
+<h3 id="org778f46f"><span class="section-number-3">2.2.</span> Caso base y como cumplen estos QAs claves</h3>
+<div class="outline-text-3" id="text-2-2">
+</div>
+<div id="outline-container-org29f2c2b" class="outline-4">
+<h4 id="org29f2c2b"><span class="section-number-4">2.2.1.</span> Disponibilidad</h4>
 </div>
 
-<div id="outline-container-orgdc3f6d6" class="outline-3">
-<h3 id="orgdc3f6d6"><span class="section-number-3">2.2.</span> QA clave + justificación.</h3>
+<div id="outline-container-orga1b9928" class="outline-4">
+<h4 id="orga1b9928"><span class="section-number-4">2.2.2.</span> Escalabilidad (Elasticidad)</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<p>
+Actualmente hay un Nginx que actua como reverse proxy y potencialmente balanceador de carga, pero en este momento solo tiene configurado una sola instancia de la app de Node.js. De todas formas, notamos varios problemas con esto. En principio, la app es <span class="underline">stateful</span> porque guarda el estado en memoria y guarda cada tantos segundos el estado de la memoria en distintos archivos json en la carpeta <code>state/</code>. Esto hace que no se pueda escalar horizontalmente la app sin perder el estado, ya que cada instancia tendria su propio estado en memoria y no habria forma de sincronizarlos.
+</p>
 </div>
 </div>
-<div id="outline-container-org2a0e76c" class="outline-2">
-<h2 id="org2a0e76c"><span class="section-number-2">3.</span> Arquitectura base</h2>
+<div id="outline-container-orgc0255d0" class="outline-4">
+<h4 id="orgc0255d0"><span class="section-number-4">2.2.3.</span> Visibilidad</h4>
+<div class="outline-text-4" id="text-2-2-3">
+<p>
+Actualmente hay un contenedor de Graphite y otro de Grafana para monitorear el sistema, y tienen algunas metricas en un dashboard creado por la catedra que permite visualizar algunas metricas como Scenarios launched, Request state, Response time y Resources. Faltarian metricas mas especificas del negocio como por ejemplo, volumen de transacciones por moneda, cantidad de clientes activos, etc.
+</p>
+</div>
+</div>
+<div id="outline-container-orgfc3e7e7" class="outline-4">
+<h4 id="orgfc3e7e7"><span class="section-number-4">2.2.4.</span> Seguridad</h4>
+</div>
+</div>
+</div>
+<div id="outline-container-orgec54494" class="outline-2">
+<h2 id="orgec54494"><span class="section-number-2">3.</span> Arquitectura base</h2>
 <div class="outline-text-2" id="text-3">
 </div>
-<div id="outline-container-org7a7fd4e" class="outline-3">
-<h3 id="org7a7fd4e"><span class="section-number-3">3.1.</span> Diagrama C&amp;C inicial.</h3>
+<div id="outline-container-org7741694" class="outline-3">
+<h3 id="org7741694"><span class="section-number-3">3.1.</span> Diagrama C&amp;C inicial.</h3>
 <div class="outline-text-3" id="text-3-1">
 
-<div id="org2175d32" class="figure">
+<div id="orgc099ebd" class="figure">
 <p><img src="assets/componentes.png" alt="componentes.png" />
 </p>
 </div>
 </div>
 </div>
-<div id="outline-container-org676b096" class="outline-3">
-<h3 id="org676b096"><span class="section-number-3">3.2.</span> Análisis de decisiones del dev original y su impacto en QA.</h3>
+<div id="outline-container-org82c92fa" class="outline-3">
+<h3 id="org82c92fa"><span class="section-number-3">3.2.</span> Análisis de decisiones del dev original y su impacto en QA.</h3>
 </div>
 
-<div id="outline-container-orga30dc86" class="outline-3">
-<h3 id="orga30dc86"><span class="section-number-3">3.3.</span> Crítica.</h3>
+<div id="outline-container-orgf7b42df" class="outline-3">
+<h3 id="orgf7b42df"><span class="section-number-3">3.3.</span> Crítica.</h3>
 </div>
 </div>
-<div id="outline-container-org0be1689" class="outline-2">
-<h2 id="org0be1689"><span class="section-number-2">4.</span> Metodología de pruebas</h2>
+<div id="outline-container-orga799971" class="outline-2">
+<h2 id="orga799971"><span class="section-number-2">4.</span> Metodología de pruebas</h2>
 <div class="outline-text-2" id="text-4">
 </div>
-<div id="outline-container-org600431d" class="outline-3">
-<h3 id="org600431d"><span class="section-number-3">4.1.</span> Herramientas usadas (Artillery, Grafana, etc.).</h3>
+<div id="outline-container-orgee21ceb" class="outline-3">
+<h3 id="orgee21ceb"><span class="section-number-3">4.1.</span> Herramientas usadas (Artillery, Grafana, etc.).</h3>
 </div>
 
-<div id="outline-container-org9db317e" class="outline-3">
-<h3 id="org9db317e"><span class="section-number-3">4.2.</span> Escenarios de carga diseñados.</h3>
+<div id="outline-container-orga338f15" class="outline-3">
+<h3 id="orga338f15"><span class="section-number-3">4.2.</span> Escenarios de carga diseñados.</h3>
 </div>
 
-<div id="outline-container-org0a0ee6d" class="outline-3">
-<h3 id="org0a0ee6d"><span class="section-number-3">4.3.</span> Métricas recolectadas.</h3>
+<div id="outline-container-orgdcdb715" class="outline-3">
+<h3 id="orgdcdb715"><span class="section-number-3">4.3.</span> Métricas recolectadas.</h3>
 </div>
 </div>
-<div id="outline-container-orgb7af807" class="outline-2">
-<h2 id="orgb7af807"><span class="section-number-2">5.</span> Resultados – Caso base</h2>
+<div id="outline-container-org9544a65" class="outline-2">
+<h2 id="org9544a65"><span class="section-number-2">5.</span> Resultados – Caso base</h2>
 <div class="outline-text-2" id="text-5">
 </div>
-<div id="outline-container-orgd85ac29" class="outline-3">
-<h3 id="orgd85ac29"><span class="section-number-3">5.1.</span> Screenshots de dashboards.</h3>
+<div id="outline-container-org0086bfd" class="outline-3">
+<h3 id="org0086bfd"><span class="section-number-3">5.1.</span> Screenshots de dashboards.</h3>
 </div>
 
-<div id="outline-container-org89fd98c" class="outline-3">
-<h3 id="org89fd98c"><span class="section-number-3">5.2.</span> Interpretación de resultados.</h3>
+<div id="outline-container-orge22cbf1" class="outline-3">
+<h3 id="orge22cbf1"><span class="section-number-3">5.2.</span> Interpretación de resultados.</h3>
 </div>
 </div>
-<div id="outline-container-org7495281" class="outline-2">
-<h2 id="org7495281"><span class="section-number-2">6.</span> Propuestas de mejora</h2>
+<div id="outline-container-org8db6a5d" class="outline-2">
+<h2 id="org8db6a5d"><span class="section-number-2">6.</span> Propuestas de mejora</h2>
 <div class="outline-text-2" id="text-6">
 </div>
-<div id="outline-container-orgcc4418c" class="outline-3">
-<h3 id="orgcc4418c"><span class="section-number-3">6.1.</span> Tácticas aplicadas.</h3>
+<div id="outline-container-org4b9a7b7" class="outline-3">
+<h3 id="org4b9a7b7"><span class="section-number-3">6.1.</span> Tácticas aplicadas.</h3>
 </div>
 
-<div id="outline-container-org8c56a3a" class="outline-3">
-<h3 id="org8c56a3a"><span class="section-number-3">6.2.</span> Justificación de por qué se eligieron.</h3>
+<div id="outline-container-org6c9fb95" class="outline-3">
+<h3 id="org6c9fb95"><span class="section-number-3">6.2.</span> Justificación de por qué se eligieron.</h3>
 </div>
 
-<div id="outline-container-org6bfc507" class="outline-3">
-<h3 id="org6bfc507"><span class="section-number-3">6.3.</span> Diagramas C&amp;C modificados.</h3>
+<div id="outline-container-org76b1088" class="outline-3">
+<h3 id="org76b1088"><span class="section-number-3">6.3.</span> Diagramas C&amp;C modificados.</h3>
 </div>
 </div>
-<div id="outline-container-org2fbc7e7" class="outline-2">
-<h2 id="org2fbc7e7"><span class="section-number-2">7.</span> Resultados – Casos mejorados</h2>
+<div id="outline-container-orgea1107a" class="outline-2">
+<h2 id="orgea1107a"><span class="section-number-2">7.</span> Resultados – Casos mejorados</h2>
 <div class="outline-text-2" id="text-7">
 </div>
-<div id="outline-container-org3682431" class="outline-3">
-<h3 id="org3682431"><span class="section-number-3">7.1.</span> Screenshots comparativos.</h3>
+<div id="outline-container-orgee809cb" class="outline-3">
+<h3 id="orgee809cb"><span class="section-number-3">7.1.</span> Screenshots comparativos.</h3>
 </div>
 
-<div id="outline-container-org522a0b5" class="outline-3">
-<h3 id="org522a0b5"><span class="section-number-3">7.2.</span> Análisis de impacto sobre QA.</h3>
+<div id="outline-container-org95d106e" class="outline-3">
+<h3 id="org95d106e"><span class="section-number-3">7.2.</span> Análisis de impacto sobre QA.</h3>
 </div>
 
-<div id="outline-container-orgc298c96" class="outline-3">
-<h3 id="orgc298c96"><span class="section-number-3">7.3.</span> Trade-offs detectados.</h3>
+<div id="outline-container-org806cbfb" class="outline-3">
+<h3 id="org806cbfb"><span class="section-number-3">7.3.</span> Trade-offs detectados.</h3>
 </div>
 </div>
-<div id="outline-container-orgd0a0296" class="outline-2">
-<h2 id="orgd0a0296"><span class="section-number-2">8.</span> Conclusiones</h2>
+<div id="outline-container-org2dcdf9e" class="outline-2">
+<h2 id="org2dcdf9e"><span class="section-number-2">8.</span> Conclusiones</h2>
 <div class="outline-text-2" id="text-8">
 </div>
-<div id="outline-container-org62198bb" class="outline-3">
-<h3 id="org62198bb"><span class="section-number-3">8.1.</span> Resumen de hallazgos.</h3>
+<div id="outline-container-org96163ed" class="outline-3">
+<h3 id="org96163ed"><span class="section-number-3">8.1.</span> Resumen de hallazgos.</h3>
 </div>
 
-<div id="outline-container-org8d423a0" class="outline-3">
-<h3 id="org8d423a0"><span class="section-number-3">8.2.</span> Beneficios y limitaciones de las mejoras.</h3>
+<div id="outline-container-org91518b2" class="outline-3">
+<h3 id="org91518b2"><span class="section-number-3">8.2.</span> Beneficios y limitaciones de las mejoras.</h3>
 </div>
 
-<div id="outline-container-org995dd06" class="outline-3">
-<h3 id="org995dd06"><span class="section-number-3">8.3.</span> Futuro (ej: pasar a DB externa en TP2).</h3>
+<div id="outline-container-org1eeaeb0" class="outline-3">
+<h3 id="org1eeaeb0"><span class="section-number-3">8.3.</span> Futuro (ej: pasar a DB externa en TP2).</h3>
 </div>
 </div>
-<div id="outline-container-orgc8c4ae6" class="outline-2">
-<h2 id="orgc8c4ae6"><span class="section-number-2">9.</span> Anexos</h2>
+<div id="outline-container-org84519c6" class="outline-2">
+<h2 id="org84519c6"><span class="section-number-2">9.</span> Anexos</h2>
 <div class="outline-text-2" id="text-9">
 </div>
-<div id="outline-container-org0c9c59c" class="outline-3">
-<h3 id="org0c9c59c"><span class="section-number-3">9.1.</span> Configuraciones de escenarios de Artillery.</h3>
+<div id="outline-container-orgf02607f" class="outline-3">
+<h3 id="orgf02607f"><span class="section-number-3">9.1.</span> Configuraciones de escenarios de Artillery.</h3>
 </div>
 
-<div id="outline-container-orgcfb2191" class="outline-3">
-<h3 id="orgcfb2191"><span class="section-number-3">9.2.</span> Configs modificadas de Nginx, Docker Compose, etc.</h3>
+<div id="outline-container-orgd81dd08" class="outline-3">
+<h3 id="orgd81dd08"><span class="section-number-3">9.2.</span> Configs modificadas de Nginx, Docker Compose, etc.</h3>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="date">Created: 2025-09-28 Sun 20:27</p>
+<p class="date">Created: 2025-09-28 Sun 21:19</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

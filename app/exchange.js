@@ -119,45 +119,40 @@ export async function exchange(exchangeRequest) {
         try {
           process.stdout.write(`[metrics] incrementing volume.${baseCurrency}.sell by ${Math.round(baseAmount)}\n`);
           process.stdout.write(`[metrics] incrementing volume.${counterCurrency}.buy by ${Math.round(counterAmount)}\n`);
+          statsd.increment(`response.200`);
+          statsd.gauge(`account.${baseAccount.id}.balance`, baseAccount.balance);
+          statsd.gauge(`account.${counterAccount.id}.balance`, counterAccount.balance);
           statsd.increment(`volume.${baseCurrency}.sell`, Math.round(baseAmount));
           statsd.increment(`volume.${counterCurrency}.buy`, Math.round(counterAmount));
         } catch (err) {}
       } else {
-        //could not transfer to clients' counter account, return base amount to client
+        // could not transfer to clients' counter account, return base amount to client
         await transfer(baseAccount.id, clientBaseAccountId, baseAmount);
         exchangeResult.obs = "Could not transfer to clients' account";
       
         try {
-          process.stdout.write("[metrics] incrementing errors.could_not_transfer_to_client\n");
-          statsd.increment(`errors.could_not_transfer_to_client`);
+          process.stdout.write("[metrics] incrementing response.500\n");
+          statsd.increment(`response.500`);
         } catch (err) {}
       }
     } else {
-      //could not withdraw from clients' account
+      // could not withdraw from clients' account
       exchangeResult.obs = "Could not withdraw from clients' account";
     
       try {
-        process.stdout.write("[metrics] incrementing errors.could_not_withdraw_from_client\n");
-        statsd.increment(`errors.could_not_withdraw_from_client`);
+        process.stdout.write("[metrics] incrementing response.402\n");
+        statsd.increment(`response.402`);
       } catch (err) {}
     }
   } else {
-    //not enough funds on internal counter account
+    // not enough funds on internal counter account
     exchangeResult.obs = "Not enough funds on counter currency account";
   
     try {
-      process.stdout.write("[metrics] incrementing errors.not_enough_funds_counter_account\n");
-      statsd.increment(`errors.not_enough_funds_counter_account`);
+      process.stdout.write("[metrics] incrementing response.500\n");
+      statsd.increment(`response.500`);
     } catch (err) {}
   }
-
-  //gauge balances of our internal accounts (for observability)
-  try {
-    for (let a of accounts) {
-      process.stdout.write(`[metrics] gauging account ${a.id} balance ${a.balance}\n`);
-      statsd.gauge(`account.${a.id}.balance`, a.balance);
-    }
-  } catch (err) {}
 
   // timing of the whole request (ms)
   try {
@@ -165,7 +160,7 @@ export async function exchange(exchangeRequest) {
     statsd.timing("exchange.request.duration", Date.now() - start);
   } catch (err) {}
 
-  //log the transaction and return it
+  // log the transaction and return it
   log.push(exchangeResult);
 
   return exchangeResult;
@@ -180,10 +175,6 @@ async function transfer(fromAccountId, toAccountId, amount) {
 
   return new Promise((resolve) =>
     setTimeout(() => {
-      try {
-        process.stdout.write("[metrics] timing transfer.duration\n");
-        statsd.timing("transfer.duration", Date.now() - start);
-      } catch (err) {}
       resolve(true);
     }, delay)
   );

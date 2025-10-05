@@ -12,7 +12,7 @@ config:
 
   phases:
     - name: Soak
-      duration: 300
+      duration: 180
       arrivalRate: 3
 
 scenarios:
@@ -21,8 +21,8 @@ scenarios:
       - post:
           url: "/exchange"
           json:
-            baseCurrency: "USD"
-            counterCurrency: "ARS"
+            baseCurrency: "EUR"
+            counterCurrency: "BRL"
             baseAccountId: "1"
             counterAccountId: "2"
-            baseAmount: 10
+            baseAmount: 5

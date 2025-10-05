@@ -39,8 +39,7 @@
       "targets": [
         { "refId": "A", "target": "alias(stats.timers.arVault.transfer.duration.mean, 'mean')" },
         { "refId": "B", "target": "alias(stats.timers.arVault.transfer.duration.median, 'median')" },
-        { "refId": "C", "target": "alias(stats.timers.arVault.transfer.duration.upper_90, 'p90')" },
-        { "refId": "D", "target": "alias(stats.timers.arVault.transfer.duration.std, 'std')" }
+        { "refId": "C", "target": "alias(stats.timers.arVault.transfer.duration.upper_90, 'p90')" }
       ],
       "yaxes": [
         {
@@ -73,8 +72,7 @@
       "targets": [
         { "refId": "A", "target": "alias(stats.timers.arVault.exchange.request.duration.mean, 'mean')" },
         { "refId": "B", "target": "alias(stats.timers.arVault.exchange.request.duration.median, 'median')" },
-        { "refId": "C", "target": "alias(stats.timers.arVault.exchange.request.duration.upper_90, 'p90')" },
-        { "refId": "D", "target": "alias(stats.timers.arVault.exchange.request.duration.std, 'std')" }
+        { "refId": "C", "target": "alias(stats.timers.arVault.exchange.request.duration.upper_90, 'p90')" }
       ],
       "yaxes": [
         {
@@ -105,9 +103,9 @@
       "type": "timeseries",
       "datasource": "Graphite",
       "targets": [
-        { "refId": "A", "target": "alias(stats.gauges.arVault.scenarioDuration.median, 'median')" },
-        { "refId": "B", "target": "alias(stats.gauges.arVault.scenarioDuration.p90, 'p90')" },
-        { "refId": "C", "target": "alias(stats.gauges.arVault.scenarioDuration.std, 'std')" }
+        { "refId": "A", "target": "alias(stats.gauges.artillery-api.scenarioDuration.median, 'median')" },
+        { "refId": "B", "target": "alias(stats.gauges.artillery-api.scenarioDuration.p90, 'p90')" },
+        { "refId": "C", "target": "alias(stats.gauges.artillery-api.scenarioDuration.std, 'std')" }
       ],
       "yaxes": [
         {
@@ -140,6 +138,62 @@
       "targets": [
         { "refId": "A", "target": "aliasByNode(stats.gauges.arVault.account.$cuentas.balance, -2)" }
       ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Volumen de Compra (Buy)",
+      "datasource": "Graphite",
+      "targets": [
+        {
+          "refId": "A",
+          "target": "aliasByNode(derivative(stats.arVault.volume.*.buy), -2)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "lines",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 0 }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Volumen de Venta (Sell)",
+      "datasource": "Graphite",
+      "targets": [
+        {
+          "refId": "A",
+          "target": "aliasByNode(derivative(stats.arVault.volume.*.sell), -2)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "lines",
+            "lineWidth": 2,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        }
+      },
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 9 }
     }
   ],
   "refresh": "5s",

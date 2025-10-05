@@ -2,6 +2,11 @@ config:
   environments:
     api:
       target: "http://localhost:5555"
+      plugins:
+        statsd:
+          host: "localhost"
+          port: 8125
+          prefix: "artillery-api"
   processor: "helpers.js"
   pool: 15
   phases:

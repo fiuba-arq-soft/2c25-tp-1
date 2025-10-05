@@ -1,0 +1,65 @@
+config:
+  environments:
+    api:
+      target: "http://localhost:5555"
+      plugins:
+        statsd:
+          host: "localhost"
+          port: 8125
+          prefix: "artillery-api"
+
+  phases:
+    # Spike 1: ARS → USD
+    - name: Spike ARS→USD
+      duration: 10
+      arrivalRate: 50
+      scenario: "ARS_to_USD"
+
+    # Cooldown
+    - name: Cooldown 1
+      duration: 15
+      arrivalRate: 3
+      scenario: "ARS_to_USD"
+
+    # Spike 2: USD → ARS
+    - name: Spike USD→ARS
+      duration: 10
+      arrivalRate: 60
+      scenario: "USD_to_ARS"
+
+    # Cooldown
+    - name: Cooldown 2
+      duration: 10
+      arrivalRate: 3
+      scenario: "USD_to_ARS"
+
+    # Spike 3: ARS → USD
+    - name: Final Spike ARS→USD
+      duration: 12
+      arrivalRate: 80
+      scenario: "ARS_to_USD"
+
+scenarios:
+  # Primer y tercer spike
+  - name: "ARS_to_USD"
+    flow:
+      - post:
+          url: "/exchange"
+          json:
+            baseCurrency: "ARS"
+            counterCurrency: "USD"
+            baseAccountId: "2"
+            counterAccountId: "1"
+            baseAmount: 100
+
+  # Segundo spike
+  - name: "USD_to_ARS"
+    flow:
+      - post:
+          url: "/exchange"
+          json:
+            baseCurrency: "USD"
+            counterCurrency: "ARS"
+            baseAccountId: "1"
+            counterAccountId: "2"
+            baseAmount: 10

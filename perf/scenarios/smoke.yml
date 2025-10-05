@@ -1,0 +1,17 @@
+config:
+  target: "http://localhost:5555"
+  phases:
+    - duration: 5
+      arrivalRate: 1
+      name: Smoke test
+  plugins:
+    statsd:
+      host: "localhost"
+      port: 8125
+      prefix: "smoketest"
+
+scenarios:
+  - name: "Ping /exchange"
+    flow:
+      - get:
+          url: "/rates"

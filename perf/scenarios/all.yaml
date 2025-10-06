@@ -7,7 +7,6 @@ config:
           host: "localhost"
           port: 8125
           prefix: "artillery-api"
-  processor: "helpers.js"
 
   pool: 75
   
@@ -33,12 +32,11 @@ config:
 scenarios:
   - name: Exchange all-phases
     flow:
-      - function: "setRandomExchange"
       - post:
           url: "/exchange"
           json:
-            baseCurrency: "USD"
-            counterCurrency: "ARS"
+            baseCurrency: "ARS"
+            counterCurrency: "USD"
             baseAccountId: "1"
             counterAccountId: "2"
-            baseAmount: "{{ baseAmount }}"
+            baseAmount: 15000

@@ -1,4 +1,6 @@
 config:
+  ensure:
+    phaseSeparation: true
   environments:
     api:
       target: "http://localhost:5555"
@@ -8,7 +10,15 @@ config:
           port: 8125
           prefix: "artillery-api"
 
+  pool: 75
+
   phases:
+    # Warm-up
+    - name: Warm-up (poca carga)
+      duration: 30
+      arrivalRate: 2
+      scenario: "ARS_to_USD"
+
     # Spike 1: ARS → USD
     - name: Spike ARS→USD
       duration: 10
@@ -50,7 +60,7 @@ scenarios:
             counterCurrency: "USD"
             baseAccountId: "2"
             counterAccountId: "1"
-            baseAmount: 100
+            baseAmount: 150000
 
   # Segundo spike
   - name: "USD_to_ARS"

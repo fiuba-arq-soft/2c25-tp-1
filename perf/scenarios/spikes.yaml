@@ -1,6 +1,4 @@
 config:
-  ensure:
-    phaseSeparation: true
   environments:
     api:
       target: "http://localhost:5555"
@@ -30,27 +28,15 @@ config:
       duration: 15
       arrivalRate: 3
       scenario: "ARS_to_USD"
-
-    # Spike 2: USD → ARS
-    - name: Spike USD→ARS
-      duration: 10
-      arrivalRate: 60
-      scenario: "USD_to_ARS"
-
-    # Cooldown
-    - name: Cooldown 2
-      duration: 10
-      arrivalRate: 3
-      scenario: "USD_to_ARS"
-
-    # Spike 3: ARS → USD
+      
+    # Spike 2: ARS → USD
     - name: Final Spike ARS→USD
       duration: 12
       arrivalRate: 80
       scenario: "ARS_to_USD"
 
 scenarios:
-  # Primer y tercer spike
+  # Primer y segundo spike
   - name: "ARS_to_USD"
     flow:
       - post:
@@ -60,16 +46,4 @@ scenarios:
             counterCurrency: "USD"
             baseAccountId: "2"
             counterAccountId: "1"
-            baseAmount: 150000
-
-  # Segundo spike
-  - name: "USD_to_ARS"
-    flow:
-      - post:
-          url: "/exchange"
-          json:
-            baseCurrency: "USD"
-            counterCurrency: "ARS"
-            baseAccountId: "1"
-            counterAccountId: "2"
-            baseAmount: 10
+            baseAmount: 15000

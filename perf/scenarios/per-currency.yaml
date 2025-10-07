@@ -14,7 +14,7 @@ config:
 
     - name: USD→ARS
       duration: 30
-      arrivalRate: 5
+      arrivalRate: 10
       scenario: "USD_to_ARS"
 
     - name: ARS→BRL
@@ -24,7 +24,7 @@ config:
 
     - name: BRL→ARS
       duration: 30
-      arrivalRate: 5
+      arrivalRate: 10
       scenario: "BRL_to_ARS"
 
     - name: ARS→EUR
@@ -34,7 +34,7 @@ config:
 
     - name: EUR→ARS
       duration: 30
-      arrivalRate: 5
+      arrivalRate: 10
       scenario: "EUR_to_ARS"
 
     # --- Escenarios inválidos (deberían dar error) ---

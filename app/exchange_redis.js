@@ -126,6 +126,8 @@ export async function exchange(exchangeRequest) {
         await cleanupTx(txid);
 
         const duration = Date.now() - start;
+        statsd.gauge(`account.${baseAccount.id}.balance`, baseAccount.balance);
+        statsd.gauge(`account.${counterAccount.id}.balance`, counterAccount.balance);
         statsd.timing("exchange.duration", duration);
         await addLogEntry(result);
     }

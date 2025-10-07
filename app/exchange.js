@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 import { StatsD } from "hot-shots";
-
+import { exchangeMutex } from './mutex.js';
 import { init as stateInit, getAccounts as stateAccounts, getRates as stateRates, getLog as stateLog } from "./state.js";
 
 const statsd = new StatsD({
@@ -8,6 +8,8 @@ const statsd = new StatsD({
   port: process.env.STATSD_PORT ? Number(process.env.STATSD_PORT) : 8125,
   prefix: (process.env.STATSD_PREFIX || "arVault") + "."
 });
+
+const currencies = ["USD", "ARS", "BRL", "EUR"];
 
 let accounts;
 let rates;
@@ -65,105 +67,155 @@ export function setRate(rateRequest) {
 
 //executes an exchange operation
 export async function exchange(exchangeRequest) {
-  const {
-    baseCurrency,
-    counterCurrency,
-    baseAccountId: clientBaseAccountId,
-    counterAccountId: clientCounterAccountId,
-    baseAmount,
-  } = exchangeRequest;
-
-  const start = Date.now();
-
-  //get the exchange rate
-  const exchangeRate = rates[baseCurrency][counterCurrency];
-  //compute the requested (counter) amount
-  const counterAmount = baseAmount * exchangeRate;
-  //find our account on the provided (base) currency
-  const baseAccount = findAccountByCurrency(baseCurrency);
-  //find our account on the counter currency
-  const counterAccount = findAccountByCurrency(counterCurrency);
-
-  //construct the result object with defaults
-  const exchangeResult = {
-    id: nanoid(),
-    ts: new Date(),
-    ok: false,
-    request: exchangeRequest,
-    exchangeRate: exchangeRate,
-    counterAmount: 0.0,
-    obs: null,
-  };
-
-  // increment request counter for throughput
   try {
-    process.stdout.write("[metrics] incrementing requests.exchange\n");
-    statsd.increment("requests.exchange");
-  } catch (err) {}
+    const {
+      baseCurrency,
+      counterCurrency,
+      baseAccountId: clientBaseAccountId,
+      counterAccountId: clientCounterAccountId,
+      baseAmount,
+    } = exchangeRequest;
 
-  //check if we have funds on the counter currency account
-  if (counterAccount.balance >= counterAmount) {
-    //try to transfer from clients' base account
-    if (await transfer(clientBaseAccountId, baseAccount.id, baseAmount)) {
-      //try to transfer to clients' counter account
-      if (
-        await transfer(counterAccount.id, clientCounterAccountId, counterAmount)
-      ) {
-        //all good, update balances
-        baseAccount.balance += baseAmount;
-        counterAccount.balance -= counterAmount;
-        exchangeResult.ok = true;
-        exchangeResult.counterAmount = counterAmount;
+    const start = Date.now();
 
-        // business metrics: volume by currency (rounded for counter semantics)
-        try {
-          process.stdout.write(`[metrics] incrementing volume.${baseCurrency}.sell by ${Math.round(baseAmount)}\n`);
-          process.stdout.write(`[metrics] incrementing volume.${counterCurrency}.buy by ${Math.round(counterAmount)}\n`);
-          statsd.increment(`response.200`);
-          statsd.gauge(`account.${baseAccount.id}.balance`, baseAccount.balance);
-          statsd.gauge(`account.${counterAccount.id}.balance`, counterAccount.balance);
-          statsd.increment(`volume.${baseCurrency}.sell`, Math.round(baseAmount));
-          statsd.increment(`volume.${counterCurrency}.buy`, Math.round(counterAmount));
-        } catch (err) {}
+    // VALIDACIONES CON LOCK (previene race conditions)
+    if (!baseCurrency || !counterCurrency || !baseAmount || !clientBaseAccountId || !clientCounterAccountId) {
+      return {
+        id: nanoid(),
+        ts: new Date(),
+        status: 400,
+        request: exchangeRequest,
+        obs: "Missing required fields"
+      };
+    }
+
+    if (!baseCurrency in currencies || !counterCurrency in currencies) {
+      return {
+        id: nanoid(),
+        ts: new Date(),
+        status: 400,
+        request: exchangeRequest,
+        obs: "Invalid currency"
+      };
+    }
+
+    if (typeof baseAmount !== 'number' || baseAmount <= 0) {
+      return {
+        id: nanoid(),
+        ts: new Date(),
+        status: 400,
+        request: exchangeRequest,
+        obs: "baseAmount must be a positive number"
+      };
+    }
+
+    //get the exchange rate
+    const exchangeRate = rates[baseCurrency][counterCurrency];
+    
+    // VALIDAR QUE LA TASA EXISTA
+    if (!exchangeRate) {
+      return {
+        id: nanoid(),
+        ts: new Date(),
+        status: 400,
+        request: exchangeRequest,
+        obs: `Exchange rate not available for ${baseCurrency}/${counterCurrency}`
+      };
+    }
+    
+    //compute the requested (counter) amount
+    const counterAmount = baseAmount * exchangeRate;
+    //find our account on the provided (base) currency
+    const baseAccount = findAccountByCurrency(baseCurrency);
+    //find our account on the counter currency
+    const counterAccount = findAccountByCurrency(counterCurrency);
+
+    //construct the result object with defaults
+    const exchangeResult = {
+      id: nanoid(),
+      ts: new Date(),
+      ok: false,
+      request: exchangeRequest,
+      exchangeRate: exchangeRate,
+      counterAmount: 0.0,
+      obs: null,
+    };
+
+    // increment request counter for throughput
+    try {
+      process.stdout.write("[metrics] incrementing requests.exchange\n");
+      statsd.increment("requests.exchange");
+    } catch (err) {}
+
+    // await exchangeMutex.lock();
+
+    //check if we have funds on the counter currency account
+    if (counterAccount.balance >= counterAmount) {
+      counterAccount.balance -= counterAmount;
+      // try to transfer from clients' base account
+      if (await transfer(clientBaseAccountId, baseAccount.id, baseAmount)) {
+        // try to transfer to clients' counter account
+        if (await transfer(counterAccount.id, clientCounterAccountId, counterAmount)) {
+          // TRANSACCIÓN ATÓMICA: Actualizar balances juntos con lock
+          baseAccount.balance += baseAmount;
+          // counterAccount.balance -= counterAmount;
+          exchangeResult.status = 200;
+          exchangeResult.counterAmount = counterAmount;
+
+          // business metrics: volume by currency (rounded for counter semantics)
+          try {
+            process.stdout.write(`[metrics] incrementing volume.${baseCurrency}.sell by ${Math.round(baseAmount)}\n`);
+            process.stdout.write(`[metrics] incrementing volume.${counterCurrency}.buy by ${Math.round(counterAmount)}\n`);
+            statsd.increment(`volume.${baseCurrency}.sell`, Math.round(baseAmount));
+            statsd.increment(`volume.${counterCurrency}.buy`, Math.round(counterAmount));
+          } catch (err) {}
+        } else {
+          // could not transfer to clients' counter account, return base amount to client
+          await transfer(baseAccount.id, clientBaseAccountId, baseAmount);
+          exchangeResult.obs = "Could not transfer to clients' account";
+          counterAccount.balance += counterAmount;
+        
+          try {
+            process.stdout.write("[metrics] incrementing response.500\n");
+            statsd.increment(`response.500`);
+          } catch (err) {}
+        }
       } else {
-        // could not transfer to clients' counter account, return base amount to client
-        await transfer(baseAccount.id, clientBaseAccountId, baseAmount);
-        exchangeResult.obs = "Could not transfer to clients' account";
+        // could not withdraw from clients' account
+        counterAccount.balance += counterAmount;
+        exchangeResult.obs = "Could not withdraw from clients' account";
       
         try {
-          process.stdout.write("[metrics] incrementing response.500\n");
-          statsd.increment(`response.500`);
+          process.stdout.write("[metrics] incrementing response.402\n");
+          statsd.increment(`response.402`);
         } catch (err) {}
       }
     } else {
-      // could not withdraw from clients' account
-      exchangeResult.obs = "Could not withdraw from clients' account";
+      // not enough funds on internal counter account
+      exchangeResult.obs = "Not enough funds on counter currency account";
     
       try {
-        process.stdout.write("[metrics] incrementing response.402\n");
-        statsd.increment(`response.402`);
+        process.stdout.write("[metrics] incrementing response.500\n");
+        statsd.increment(`response.500`);
       } catch (err) {}
     }
-  } else {
-    // not enough funds on internal counter account
-    exchangeResult.obs = "Not enough funds on counter currency account";
-  
+
+    // timing of the whole request (ms)
     try {
-      process.stdout.write("[metrics] incrementing response.500\n");
-      statsd.increment(`response.500`);
+      process.stdout.write("[metrics] timing exchange.request.duration\n");
+      statsd.timing("exchange.request.duration", Date.now() - start);
+      statsd.gauge(`account.${baseAccount.id}.balance`, baseAccount.balance);
+      statsd.gauge(`account.${counterAccount.id}.balance`, counterAccount.balance);
     } catch (err) {}
+
+    // log the transaction and return it
+    log.push(exchangeResult);
+
+    return exchangeResult;
+    
+  } finally {
+    exchangeMutex.unlock();
   }
-
-  // timing of the whole request (ms)
-  try {
-    process.stdout.write("[metrics] timing exchange.request.duration\n");
-    statsd.timing("exchange.request.duration", Date.now() - start);
-  } catch (err) {}
-
-  // log the transaction and return it
-  log.push(exchangeResult);
-
-  return exchangeResult;
 }
 
 // internal - call transfer service to execute transfer between accounts

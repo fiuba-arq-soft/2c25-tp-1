@@ -1,16 +1,17 @@
 import express from "express";
-
 import {
-  init as exchangeInit,
-  getAccounts,
+  init as redisInit,
   setAccountBalance,
+  getAccounts,
   getRates,
   setRate,
   getLog,
+} from "./redis.js";
+import {
   exchange,
-} from "./exchange.js";
+} from "./exchange_redis.js";
 
-await exchangeInit();
+await redisInit();
 
 const app = express();
 const port = 3000;
@@ -19,30 +20,37 @@ app.use(express.json());
 
 // ACCOUNT endpoints
 
-app.get("/accounts", (req, res) => {
-  res.json(getAccounts());
+app.get("/accounts", async (req, res) => {
+  try {
+    const accounts = await getAccounts();
+    res.json(accounts);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-app.put("/accounts/:id/balance", (req, res) => {
+// ACCOUNT endpoints
+app.put("/accounts/:id/balance", async (req, res) => {
   const accountId = req.params.id;
   const { balance } = req.body;
 
   if (!accountId || !balance) {
     return res.status(400).json({ error: "Malformed request" });
-  } else {
-    setAccountBalance(accountId, balance);
-
-    res.json(getAccounts());
   }
+
+  await setAccountBalance(accountId, balance);
+  const accounts = await getAccounts(); 
+  res.json(accounts);
 });
 
 // RATE endpoints
-
-app.get("/rates", (req, res) => {
-  res.json(getRates());
+app.get("/rates", async (req, res) => {
+  const rates = await getRates();
+  res.json(rates);
 });
 
-app.put("/rates", (req, res) => {
+app.put("/rates", async (req, res) => {
   const { baseCurrency, counterCurrency, rate } = req.body;
 
   if (!baseCurrency || !counterCurrency || !rate) {
@@ -50,15 +58,15 @@ app.put("/rates", (req, res) => {
   }
 
   const newRateRequest = { ...req.body };
-  setRate(newRateRequest);
-
-  res.json(getRates());
+  await setRate(newRateRequest);
+  const rates = await getRates();
+  res.json(rates);
 });
 
 // LOG endpoint
-
-app.get("/log", (req, res) => {
-  res.json(getLog());
+app.get("/log", async (req, res) => {
+  const log = await getLog();
+  res.json(log);
 });
 
 // EXCHANGE endpoint
@@ -85,14 +93,10 @@ app.post("/exchange", async (req, res) => {
   const exchangeRequest = { ...req.body };
   const exchangeResult = await exchange(exchangeRequest);
 
-  if (exchangeResult.ok) {
-    res.status(200).json(exchangeResult);
-  } else {
-    res.status(500).json(exchangeResult);
-  }
+  res.status(exchangeResult.status).json(exchangeResult);
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Exchange API listening on port ${port}`);
 });
 

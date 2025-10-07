@@ -102,6 +102,12 @@ export async function exchange(exchangeRequest) {
         result.status = 200;
         result.obs = null;
 
+        statsd.increment(`volume.${baseCurrency}.acum`, Math.round(baseAmount));
+        statsd.increment(`volume.${counterCurrency}.acum`, Math.round(baseAmount));
+
+        statsd.increment(`volume.${baseCurrency}.neto`, -Math.round(baseAmount));
+        statsd.increment(`volume.${counterCurrency}.neto`, Math.round(counterAmount));
+
         statsd.increment(`volume.${baseCurrency}.sell`, Math.round(baseAmount));
         statsd.increment(`volume.${counterCurrency}.buy`, Math.round(counterAmount));
     } catch (err) {

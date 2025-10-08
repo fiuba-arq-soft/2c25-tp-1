@@ -227,11 +227,13 @@ p_cadvisor_host --> p_cadvisor_docker
 
 * Metodología de pruebas
 
-** Herramientas usadas (Artillery, Grafana, etc.).
+** Recolección de datos
 
-** Escenarios de carga diseñados.
+*** StatsD + Graphit + Grafana
 
-** Métricas recolectadas.
+*** DataDog
+
+** Generación de carga
 
 * Resultados – Caso base
 
@@ -327,73 +329,39 @@ Para la prueba de carga alta (salidarates2.txt):
 - Respuestas exitosas: 35944 (con 9056 errores ECONNRESET)
 - Tiempo de respuesta medio: 321.2 ms, mediana: 16 ms, p95: 2836.2 ms, p99: 4492.8 ms
 
-** Screenshots de dashboards.
-
-** Interpretación de resultados.
-
 * Propuestas de mejora
 
-** Tácticas aplicadas.
+** Implementacion de Valkey como persistencia
 
-Intentamos agregar una base de datos tipo Redis (específicamente Valkey, un fork de Redis) para tener persistencia real y poder escalar horizontalmente los nodos. Esta solución aborda los problemas de la persistencia basada en archivos JSON locales, que no permiten compartir estado entre instancias y carecen de atomicidad en las operaciones.
-
-*** Implementación de Valkey para persistencia
+*** Tactica aplicada
 
 La implementación utiliza Valkey como almacén de datos centralizado, reemplazando la persistencia en archivos JSON. Los datos se almacenan como claves en Redis:
 
 - ~accounts~: Almacena la lista de cuentas de usuario en formato JSON.
+
 - ~rates~: Contiene las tasas de cambio entre monedas.
+
 - ~log~: Registra el historial de transacciones realizadas.
 
 El módulo ~valkey.js~ proporciona funciones asíncronas para inicializar la conexión (~init()~), obtener datos (~getAccounts()~, ~getRates()~, ~getLog()~) y actualizarlos (~setAccounts()~, ~setRates()~, ~setLog()~). Estas funciones serializan/deserializan los datos a JSON para almacenarlos como strings en Redis.
 
 En ~exchange.js~, se importa y utiliza este módulo para todas las operaciones de persistencia, reemplazando las lecturas/escrituras directas a archivos. La inicialización se realiza al inicio de la aplicación con ~await valkeyInit()~.
 
-*** Configuración en Docker Compose
+*** Configuracion
 
 Se agregó un servicio ~valkey~ en el ~docker-compose.yml~ utilizando la imagen ~valkey/valkey:8.1.4-alpine~, expuesto en el puerto 6379. La aplicación se conecta mediante la variable de entorno ~VALKEY_URL=redis://valkey:6379~.
 
-*** Beneficios para escalabilidad horizontal
+*** Beneficios
 
 Al centralizar el estado en Valkey, múltiples instancias de la API pueden compartir el mismo almacén de datos. Esto elimina la dependencia de estado local en memoria o archivos, permitiendo:
 
 - Escalado horizontal sin pérdida de consistencia.
+
 - Persistencia real de los datos, sobreviviente a reinicios de contenedores.
+
 - Operaciones atómicas en Redis para transacciones financieras.
 
 Esta táctica mejora significativamente la Disponibilidad y Escalabilidad, mitigando los puntos únicos de falla relacionados con la persistencia local.
-
-*** Implementación de PostgreSQL para persistencia y escalabilidad horizontal
-
-La implementación utiliza PostgreSQL como almacén de datos relacional, reemplazando la persistencia en archivos JSON y Valkey. Las tablas creadas son:
-
-- ~accounts~: Almacena las cuentas de usuario con campos como id, currency, balance, created_at, updated_at, deleted.
-- ~exchange_rates~: Contiene las tasas de cambio entre monedas con base_currency, counter_currency, rate, updated_at.
-- ~transactions~: Registra el historial de transacciones realizadas, con soporte para atomicidad en operaciones de intercambio.
-
-El módulo ~databaseAdapter.js~ proporciona funciones para conectarse a PostgreSQL usando el paquete ~pg~, manejando conexiones y transacciones. Los modelos en ~models/~ (Account, ExchangeRate, Transaction) manejan las operaciones CRUD con soporte para transacciones ACID.
-
-En ~exchange.js~, se utilizan estos modelos para todas las operaciones financieras, incluyendo transacciones atómicas para intercambios que requieren consistencia (ej. actualizar balances y registrar transacción en una sola operación).
-
-*** Configuración en Docker Compose
-
-Se agregó un servicio ~postgres~ en el ~docker-compose.yml~ utilizando la imagen ~postgres:15-alpine~, con inicialización de la base de datos mediante el script ~01-init.sql~ que crea las tablas, índices y datos iniciales.
-
-Se configuraron tres instancias de la API (~api1~, ~api2~, ~api3~) conectadas a PostgreSQL, permitiendo escalado horizontal sin pérdida de estado.
-
-*** Configuración de Load Balancing en Nginx
-
-Se actualizó ~nginx_reverse_proxy.conf~ para balancear carga entre las tres instancias de API utilizando un bloque ~upstream~.
-
-*** Beneficios para escalabilidad, disponibilidad y performance
-
-Al centralizar el estado en PostgreSQL con transacciones ACID, múltiples instancias pueden compartir el mismo almacén de datos de forma consistente y atómica. Esto elimina dependencias de estado local, permite escalado horizontal sin pérdida de consistencia, y asegura atomicidad en operaciones financieras críticas, mejorando la integridad de datos.
-
-Esta táctica mejora significativamente la Disponibilidad (reduciendo puntos únicos de falla en persistencia), Escalabilidad (permitiendo más nodos con estado compartido), y Performance (con transacciones eficientes, concurrencia controlada y consultas optimizadas con índices).
-
-** Justificación de por qué se eligieron.
-
-** Diagramas C&C modificados.
 
 #+BEGIN_SRC plantuml :file assets/componentes-modificados.png :exports results
 @startuml
@@ -403,43 +371,43 @@ skinparam componentStyle rectangle
 component "Cliente" as Client
 
 component "Contenedores Docker" {
- portin "5555" as p_nginx_host
+  portin "5555" as p_nginx_host
 
- portin "8090" as p_graphite_host
- portin "8125" as p_graphite_statsd_host
- portin "8126" as p_graphite_statsd_admin
+  portin "8090" as p_graphite_host
+  portin "8125" as p_graphite_statsd_host
+  portin "8126" as p_graphite_statsd_admin
 
- portin "80" as p_grafana_host
+  portin "80" as p_grafana_host
 
- portin "8080" as p_cadvisor_host
+  portin "8080" as p_cadvisor_host
 
- component "Nginx\n(Reverse Proxy)" as Nginx {
-   portin "80" as p_nginx_docker
- }
- component "API Node 1\n(Node.js)" as API1 {
-   portin "3000" as p_api1_docker
- }
- component "API Node 2\n(Node.js)" as API2 {
-   portin "3001" as p_api2_docker
- }
- component "API Node 3\n(Node.js)" as API3 {
-   portin "3002" as p_api3_docker
- }
- database "Valkey\n(Redis)" as Valkey {
-   portin "6379" as p_valkey_docker
- }
+  component "Nginx\n(Reverse Proxy)" as Nginx {
+    portin "80" as p_nginx_docker
+  }
+  component "API Node 1\n(Node.js)" as API1 {
+    portin "3000" as p_api1_docker
+  }
+  component "API Node 2\n(Node.js)" as API2 {
+    portin "3001" as p_api2_docker
+  }
+  component "API Node 3\n(Node.js)" as API3 {
+    portin "3002" as p_api3_docker
+  }
+  database "Valkey\n(Redis)" as Valkey {
+    portin "6379" as p_valkey_docker
+  }
 
- component "cAdvisor\n(Monitoring)" as CAdvisor {
-   portin "8080" as p_cadvisor_docker
- }
- component "Graphite\n(Métricas)" as Graphite {
-   portin "80" as p_graphite_http_docker
-   portin "8125" as p_graphite_statsd_docker
-   portin "8126" as p_graphite_statds_admin_docker
- }
- component "Grafana\n(Dashboard)" as Grafana {
-   portin "3000" as p_grafana_docker
- }
+  component "cAdvisor\n(Monitoring)" as CAdvisor {
+    portin "8080" as p_cadvisor_docker
+  }
+  component "Graphite\n(Métricas)" as Graphite {
+    portin "80" as p_graphite_http_docker
+    portin "8125" as p_graphite_statsd_docker
+    portin "8126" as p_graphite_statds_admin_docker
+  }
+  component "Grafana\n(Dashboard)" as Grafana {
+    portin "3000" as p_grafana_docker
+  }
 }
 
 Client --> p_nginx_host : HTTP
@@ -462,7 +430,36 @@ p_cadvisor_host --> p_cadvisor_docker
 #+RESULTS:
 [[file:assets/componentes-modificados.png]]
 
-** Diagrama C&C con PostgreSQL.
+
+** Implementacion de PostgreSQL como persistencia
+
+*** Tactica aplicada
+
+La implementación utiliza PostgreSQL como almacén de datos relacional, reemplazando la persistencia en archivos JSON y Valkey. Las tablas creadas son:
+
+- ~accounts~: Almacena las cuentas de usuario con campos como id, currency, balance, created_at, updated_at, deleted.
+
+- ~exchange_rates~: Contiene las tasas de cambio entre monedas con base_currency, counter_currency, rate, updated_at.
+
+- ~transactions~: Registra el historial de transacciones realizadas, con soporte para atomicidad en operaciones de intercambio.
+
+El módulo ~databaseAdapter.js~ proporciona funciones para conectarse a PostgreSQL usando el paquete ~pg~, manejando conexiones y transacciones. Los modelos en ~models/~ (Account, ExchangeRate, Transaction) manejan las operaciones CRUD con soporte para transacciones ACID.
+
+En ~exchange.js~, se utilizan estos modelos para todas las operaciones financieras, incluyendo transacciones atómicas para intercambios que requieren consistencia (ej. actualizar balances y registrar transacción en una sola operación).
+
+*** Configuracion
+
+Se agregó un servicio ~postgres~ en el ~docker-compose.yml~ utilizando la imagen ~postgres:15-alpine~, con inicialización de la base de datos mediante el script ~01-init.sql~ que crea las tablas, índices y datos iniciales.
+
+Se configuraron tres instancias de la API (~api1~, ~api2~, ~api3~) conectadas a PostgreSQL, permitiendo escalado horizontal sin pérdida de estado.
+
+Se actualizó ~nginx_reverse_proxy.conf~ para balancear carga entre las tres instancias de API utilizando un bloque ~upstream~.
+
+*** Beneficios
+
+Al centralizar el estado en PostgreSQL con transacciones ACID, múltiples instancias pueden compartir el mismo almacén de datos de forma consistente y atómica. Esto elimina dependencias de estado local, permite escalado horizontal sin pérdida de consistencia, y asegura atomicidad en operaciones financieras críticas, mejorando la integridad de datos.
+
+Esta táctica mejora significativamente la Disponibilidad (reduciendo puntos únicos de falla en persistencia), Escalabilidad (permitiendo más nodos con estado compartido), y Performance (con transacciones eficientes, concurrencia controlada y consultas optimizadas con índices).
 
 #+BEGIN_SRC plantuml :file assets/componentes-postgresql.png :exports results
 @startuml
@@ -472,48 +469,48 @@ skinparam componentStyle rectangle
 component "Cliente" as Client
 
 component "Contenedores Docker" {
- portin "5555" as p_nginx_host
+  portin "5555" as p_nginx_host
 
- portin "8090" as p_graphite_host
- portin "8125" as p_graphite_statsd_host
- portin "8126" as p_graphite_statsd_admin
+  portin "8090" as p_graphite_host
+  portin "8125" as p_graphite_statsd_host
+  portin "8126" as p_graphite_statsd_admin
 
- portin "80" as p_grafana_host
+  portin "80" as p_grafana_host
 
- portin "8080" as p_cadvisor_host
+  portin "8080" as p_cadvisor_host
 
- component "Nginx\n(Reverse Proxy)" as Nginx {
-   portin "80" as p_nginx_docker
- }
- component "API Node 1\n(Node.js)" as API1 {
-   portin "3000" as p_api1_docker
- }
- component "API Node 2\n(Node.js)" as API2 {
-   portin "3001" as p_api2_docker
- }
- component "API Node 3\n(Node.js)" as API3 {
-   portin "3002" as p_api3_docker
- }
- database "PostgreSQL" as PostgreSQL {
-   folder "exchange_db" {
-     [accounts]
-     [exchange_rates]
-     [transactions]
-   }
-   portin "5432" as p_postgres_docker
- }
+  component "Nginx\n(Reverse Proxy)" as Nginx {
+    portin "80" as p_nginx_docker
+  }
+  component "API Node 1\n(Node.js)" as API1 {
+    portin "3000" as p_api1_docker
+  }
+  component "API Node 2\n(Node.js)" as API2 {
+    portin "3001" as p_api2_docker
+  }
+  component "API Node 3\n(Node.js)" as API3 {
+    portin "3002" as p_api3_docker
+  }
+  database "PostgreSQL" as PostgreSQL {
+    folder "exchange_db" {
+      [accounts]
+      [exchange_rates]
+      [transactions]
+    }
+    portin "5432" as p_postgres_docker
+  }
 
- component "cAdvisor\n(Monitoring)" as CAdvisor {
-   portin "8080" as p_cadvisor_docker
- }
- component "Graphite\n(Métricas)" as Graphite {
-   portin "80" as p_graphite_http_docker
-   portin "8125" as p_graphite_statsd_docker
-   portin "8126" as p_graphite_statds_admin_docker
- }
- component "Grafana\n(Dashboard)" as Grafana {
-   portin "3000" as p_grafana_docker
- }
+  component "cAdvisor\n(Monitoring)" as CAdvisor {
+    portin "8080" as p_cadvisor_docker
+  }
+  component "Graphite\n(Métricas)" as Graphite {
+    portin "80" as p_graphite_http_docker
+    portin "8125" as p_graphite_statsd_docker
+    portin "8126" as p_graphite_statds_admin_docker
+  }
+  component "Grafana\n(Dashboard)" as Grafana {
+    portin "3000" as p_grafana_docker
+  }
 }
 
 Client --> p_nginx_host : HTTP
@@ -536,24 +533,21 @@ p_cadvisor_host --> p_cadvisor_docker
 #+RESULTS:
 [[file:assets/componentes-postgresql.png]]
 
-* Resultados – Casos mejorados
 
-** Screenshots comparativos.
+** Comparacion de estados de requests
 
-** Análisis de impacto sobre QA.
+#+CAPTION: Estado de requests en la arquitectura base
+[[file:assets/request-state-base.png]]
 
-** Trade-offs detectados.
+En la arquitectura base, se observa una alta tasa de errores debido a la sobrecarga de la única instancia de la API y problemas de concurrencia en el acceso a archivos JSON locales, lo que resulta en fallos de conexión y respuestas erróneas bajo carga elevada.
+
+#+CAPTION: Estado de requests con la propuesta de mejora (PostgreSQL y balanceo de carga)
+[[file:assets/request-state-postgresql.png]]
+
+Con la propuesta de mejora que incluye balanceo de carga entre tres nodos y PostgreSQL como persistencia, la tasa de errores se reduce significativamente. El balanceo de carga distribuye la carga uniformemente entre los nodos, evitando la saturación de un solo punto, mientras que PostgreSQL maneja mejor la concurrencia mediante transacciones ACID y acceso controlado a la base de datos, minimizando errores por conflictos de acceso a datos y mejorando la estabilidad general del sistema.
+
+* Trade-offs detectados.
+
+* Pedido Adicional (Volumen de transacciones por moneda)
 
 * Conclusiones
-
-** Resumen de hallazgos.
-
-** Beneficios y limitaciones de las mejoras.
-
-** Futuro (ej: pasar a DB externa en TP2).
-
-* Anexos
-
-** Configuraciones de escenarios de Artillery.
-
-** Configs modificadas de Nginx, Docker Compose, etc.

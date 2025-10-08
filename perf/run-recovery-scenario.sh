@@ -3,12 +3,12 @@ npm install -g artillery-plugin-statsd
 npm run artillery -- run scenarios/recovery.yaml -e api &
 
 sleep 35
-echo "💥 Simulando caída de Redis..."
-docker compose stop redis
+echo "Simulando caída de la API..."
+docker compose stop api
 
 sleep 20
-echo "🧱 Redis vuelve a levantarse..."
-docker compose start redis
+echo "La API vuelve a levantarse..."
+docker compose start api
 
 wait
-echo "✅ Escenario de recuperación finalizado"
+echo "Escenario de recuperación finalizado"

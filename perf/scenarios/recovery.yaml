@@ -17,7 +17,7 @@ config:
       arrivalRate: 3
       scenario: "USD_to_ARS"
 
-    # Simulación de caída (Redis apagado o API detenida)
+    # Simulación de caída (API detenida)
     - name: During failure
       duration: 30
       arrivalRate: 10

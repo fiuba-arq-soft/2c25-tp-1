@@ -9,6 +9,7 @@ services:
             - REDIS_PORT=6379
             - STATSD_HOST=graphite
             - STATSD_PORT=8125
+            - ADMIN_PASSWORD=password
 
     redis:
         image: redis:7-alpine

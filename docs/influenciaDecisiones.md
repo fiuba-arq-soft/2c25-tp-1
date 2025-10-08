@@ -53,49 +53,63 @@ Esta decisión implicó agregar tres nuevos contenedores, configuraciones adicio
   El uso de protocolos y herramientas estandarizadas (UDP, HTTP, Grafana, StatsD) favorece la **interoperabilidad** del sistema, tanto entre sus propios componentes como con futuras herramientas externas de monitoreo.  
 
 
-### 3.1.2 Impactos del modelo de persistencia elegido
-El modelo implementado para la persistencia del sistema consiste en guardar el estado de los datos que deben persistir en memoria y posteriormente cada tantos segundos se guarda dicho estado de la memoria en distintos archivos json en la carpeta ~state/~, es decir, en la memoria local de la instancia del servidor.
-Es por esto mismo que, en principio, la sistema es _stateful_ lo cual acarrea varios problemas bien conocidos como lo son:
+## 3.1.2 Impactos del modelo de persistencia elegido
 
-- Acomplamiento con el sevridor: Sesiones de usuarios se ven vinculadas directamente a la única instancia del sevridor, lo cual hace que no se pueda escalar horizontalmente la app sin perder el estado, ya que cada instancia tendria su propio estado en memoria y no habria forma sencilla de sincronizarlos pues requeriría alguna gestión de estado disribuido.
+El modelo de persistencia implementado en el sistema consiste en mantener en memoria el estado de los datos y, periódicamente, volcar dicho estado a archivos JSON almacenados localmente en la carpeta `~/state/`. Esto implica que la persistencia está acoplada directamente a la instancia del servidor —es decir, se trata de un sistema **stateful**—, lo que conlleva una serie de consecuencias relevantes sobre diversos atributos de calidad.
 
-- Problemas de disponibilidad y degradación de performance percibida, pues el backend se vuelve un punto único de fallo, si este falla se pierden todas las sesiones activas y como no hay replicas que tengan la capacidad de retomar la sesión con el usuario enotnces la experiencia del usuario (user perceived performance) se ve degradada.
+- **Acoplamiento con la instancia del servidor:**  
+  Al vincular el estado con una única instancia, las sesiones de usuario y los datos persistentes no pueden compartirse entre instancias. Esto impide la **escalabilidad horizontal**, dado que cada réplica tendría su propio estado local no sincronizado. Implementar una gestión de estado distribuido requeriría una infraestructura adicional (por ejemplo, una base de datos externa o un servicio de caché compartido).
 
+- **Impacto en la disponibilidad y rendimiento percibido:**  
+  La existencia de una única instancia con estado convierte al backend en un **punto único de falla**. Si el servidor se detiene, todas las sesiones activas se pierden y no pueden ser recuperadas por otra instancia. Esto afecta la **disponibilidad** y la **experiencia del usuario**, ya que aumenta la percepción de fallas y degradación del rendimiento.
 
-Además, como la memoria persistente está atada a la instancia del backend, y más aún se encuentra en su **file system**:
+- **Problemas de concurrencia:**  
+  Al utilizar el sistema de archivos local como medio de persistencia, se introducen **condiciones de carrera** durante operaciones de lectura y escritura concurrentes. El modelo de concurrencia de Node.js (basado en asincronía) no resulta suficiente para garantizar consistencia, dado que el file system no ofrece bloqueo ni sincronización de accesos concurrentes. Esto impacta negativamente la **confiabilidad** y la **consistencia de datos**.
 
-- Hay múltiples condiciones de carrera causadas por el nulo manejo de lectura/escritura concurrente del file system que no está diseñado para estos contextos, por lo que ni siquiera la misma instancia de backend en express.js puede usar correcatemente el modelo de concurrencia asincrónico. 
+- **Ausencia de soporte transaccional:**  
+  El modelo carece de transacciones, por lo que las operaciones no son atómicas ni recuperables ante fallos. En caso de interrupciones durante la escritura, el sistema puede quedar en estados inconsistentes o requerir restauraciones manuales. Esto degrada tanto la **disponibilidad** como la **recuperabilidad**.
 
-- Además, como el modelo de persistenia adoptado tampoco da soporte a algún tipo de transacciones, no solo hay condiciones carrera y errores por la lectura y esctitura concurrente de los mismos archivos, sino que tanmbién las operaciones incompletas no pueden deshacerse ni repetirse de forma segura. Frente a fallos, el sistema requiere procesos de recuperación manual o la restauración de copias de seguridad, en consecuencia, se degrada la **Disponibilidad** del sistema.
+- **Pérdida de integridad de datos:**  
+  La falta de atomicidad en las operaciones puede dejar al sistema en estados inválidos (por ejemplo, inconsistencias en saldos o cantidades totales). En consecuencia, la **integridad** del sistema se ve directamente comprometida.
 
-- La falta de atomicidad en las transacciones (no soportada por el file system) causa que se intercalen operaciones y validaciones que dejan al sistema en un estado invalido, es decir, no se garantizan las invariantes requeridas del sistema (ej. cantidad conswtante de dinero en las cuentas), afectando directamente a la **Integridad** del sistema.
+- **Incompatibilidad con balanceo de carga:**  
+  Dado que el modelo de persistencia no soporta replicación, la existencia de un balanceador de carga (como Nginx) se vuelve una decisión cuestionable. No existen múltiples backends entre los cuales distribuir tráfico, y el balanceador introduce una capa de comunicación adicional que **degrada el rendimiento** sin aportar beneficios reales.  
 
-También, a consecuencia del modelo de persistencia adoptado, que como mencionamos antes causa que el sistema no pueda incorporar réplicas del backend:
-
-- La existencia de un balanceador de cargas se vuelve una decisión completamente cuestionable, pues no solo **no** existen replicas de backend entre las cuales distribuir la carga, sino, no existe la posibilidad de agregar de manera sencilla más instancias y además con esta compoennte adicional en medio de la comunicación entre el unico backend y el usuario se degrada el performance por el uso innecesario de la red que tiene tiempos de demora considerablemente altos en contraste con la computación local. 
-
-### 3.1.3 INstancias únicas de cada servicio
-múltiples puntos únicos de falla y carente de mecanismos de recuperación automática, lo cual implica que la falla de un solo servicio (API, Nginx, almacenamiento local) ocasionaría la indisponibilidad total del sistema.
-
-### 3.1.4 Aesencia de patrón de arquitectura interna
-Dificulta agregar alguna otra funcionalidad (extensibilidad) ni modificar facilmente funcionalidades presentes (modificabilidad) ya que la arquitectura monolítica no permite la separación clara de responsabilidades ni interfaces desacopladas, lo cual extiende y dificulta para el desarrollador llevar a cbao cambios.
-
+En conjunto, este modelo de persistencia afecta negativamente la **disponibilidad**, la **escalabilidad**, la **integridad** y la **mantenibilidad**, al tiempo que incrementa la **complejidad operativa** y el riesgo de errores durante la evolución del sistema.
 
 ---
-# Legacy
+
+## 3.1.3 Instancias únicas de cada servicio
+
+El sistema fue diseñado de manera que cada servicio (API, proxy inverso Nginx, almacenamiento local, etc.) cuenta con una única instancia activa. Esta decisión genera **múltiples puntos únicos de falla** y limita severamente la capacidad del sistema para mantener su operación ante fallos parciales.
+
+- Si cualquiera de estos servicios se detiene, el sistema completo se vuelve **indisponible**, afectando directamente la **disponibilidad** y la **tolerancia a fallos**.  
+- La ausencia de mecanismos automáticos de recuperación o reinicio (como *health checks*, *watchdogs* o políticas de *restart* configuradas en Docker) agrava el impacto de las fallas, ya que se requiere intervención manual para restablecer el servicio.  
+- Tampoco existen estrategias de **replicación**, **balanceo** ni **redundancia**, lo que hace imposible sostener niveles de servicio adecuados bajo carga o ante degradación de componentes.  
+
+Esta configuración puede ser suficiente para entornos de desarrollo o demostración, pero resulta **inadecuada para entornos de producción**, donde la **disponibilidad**, **resiliencia** y **recuperabilidad** son atributos esenciales.
+
+---
+
+## 3.1.4 Ausencia de un patrón de arquitectura interna
+
+El sistema carece de un patrón de arquitectura claramente definido a nivel interno (por ejemplo, MVC, capas o microservicios), lo cual genera una estructura **monolítica y fuertemente acoplada**. Esta decisión afecta negativamente atributos clave del sistema relacionados con su evolución y mantenibilidad.
+
+- **Dificultad para modificar o extender funcionalidades:**  
+  La ausencia de separación de responsabilidades y de interfaces desacopladas complica la incorporación de nuevas funcionalidades (**extensibilidad**) o la modificación segura de las existentes (**modificabilidad**).  
+
+- **Incremento en la complejidad del código:**  
+  La lógica de negocio, de presentación y de persistencia tienden a mezclarse, lo que eleva la **complejidad cognitiva** y el riesgo de introducir errores.  
+
+- **Falta de testabilidad:**  
+  Al no existir módulos claramente delimitados, las pruebas unitarias o de integración se vuelven difíciles de implementar, afectando la **testeabilidad** del sistema.  
+
+- **Escasa capacidad de evolución:**  
+  La arquitectura monolítica limita la posibilidad de migrar gradualmente a tecnologías más modernas o de reestructurar componentes de forma incremental.  
+
+En conjunto, esta ausencia de estructura arquitectónica limita la **mantenibilidad**, **evolutividad**, **testeabilidad** y **extensibilidad**, dificultando la gestión del ciclo de vida del software.
 
 
-- Performance
-- Visibilidad
-- Seguridad (aun no mencionda)
-- Testabilidad 
-- Portabilidad
-- Interoperabilidad
-- Usabilidad
-- Manejabilidad
-- Confiabilidad
-- Simplicidad
-- Modificabilidad
 
 
 

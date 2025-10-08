@@ -2,6 +2,7 @@ import express from "express";
 import {
   init as redisInit,
   setAccountBalance,
+  getPendingTxs,
   getAccounts,
   getRates,
   setRate,
@@ -12,6 +13,13 @@ import {
 } from "./exchange_redis.js";
 
 await redisInit();
+
+const pendingTxs = await getPendingTxs();
+
+for (const tx of pendingTxs) {
+    console.log(`Procesando tx pendiente: ${tx.id}`);
+    await exchange(tx, true);
+}
 
 const app = express();
 const port = 3000;

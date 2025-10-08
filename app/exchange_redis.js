@@ -1,7 +1,6 @@
 import { nanoid } from "nanoid";
 import { StatsD } from "hot-shots";
 import { 
-    init as redisInit,
     getAccountByCurrency,
     getRate,
     creditFunds,
@@ -22,7 +21,7 @@ const statsd = new StatsD({
 
 const currencies = ["USD", "ARS", "BRL", "EUR"];
 
-export async function exchange(exchangeRequest) {
+export async function exchange(exchangeRequest, resume = false) {
     const txid = nanoid();
     const start = Date.now();
 
@@ -72,7 +71,9 @@ export async function exchange(exchangeRequest) {
     }
 
     // ---- PROCESO DE EXCHANGE ----
-    await startTx(txid, { baseCurrency, counterCurrency });
+    if (!resume) {
+        await startTx(txid, { exchangeRequest });
+    }
 
     let clientToInternalOK = false;
     let internalToClientOK = false;
@@ -140,6 +141,21 @@ export async function exchange(exchangeRequest) {
 
     return result;
 }
+
+export async function resumeExchange(tx) {
+    const { baseCurrency, counterCurrency, baseAccountId, counterAccountId, baseAmount } = tx;
+
+    const result = await exchange({
+        baseCurrency,
+        counterCurrency,
+        baseAccountId,
+        counterAccountId,
+        baseAmount
+    });
+
+    console.log(`[tx:${tx.id}] resultado re-procesado:`, result.status);
+}
+
 
 async function transfer(fromAccountId, toAccountId, amount) {
   const min = 200;

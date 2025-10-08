@@ -249,3 +249,17 @@ export async function cleanupTx(txid) {
         return false;
     }
 }
+
+export async function getPendingTxs() {
+    const keys = await redis.keys("tx:*");
+    const pendingTxs = [];
+
+    for (const key of keys) {
+        const tx = await redis.hgetall(key);
+        if (tx.state === "pending") {
+            pendingTxs.push({ id: key.replace("tx:", ""), ...tx });
+        }
+    }
+
+    return pendingTxs;
+}

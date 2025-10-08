@@ -229,9 +229,49 @@ p_cadvisor_host --> p_cadvisor_docker
 
 ** Recolección de datos
 
-*** StatsD + Graphit + Grafana
+*** Graphit + Grafana
 
-*** DataDog
+*** StatsD (métricas custom)
+
+En la app se agregaron métricas propias con ~hot-shots~ (cliente StatsD/DogStatsD) usando el prefijo ~arvault.~. Se emiten en dos puntos: (a) middleware HTTP para latencia y throughput, y (b) lógica de negocio del exchange para volumen y estado de las operaciones.
+
+- HTTP (Performance)
+  - ~arvault.api.response_time~ (*timing*, ms): latencia por request medida en el middleware. Útil para ver p50/p95/p99 y detectar degradaciones bajo carga.
+  - ~arvault.api.requests~ (*counter*): throughput de la API. Sirve para correlacionar picos de tráfico con cambios en latencia y calcular tasas (p. ej., error rate).
+
+- Negocio (Visibilidad, Disponibilidad proxy)
+  - ~arvault.exchange.transactions~ (*counter*): total de operaciones de intercambio. Base para segmentar por par de monedas y estado.
+    - ~arvault.exchange.successful_transactions~ (*counter*): operaciones exitosas; permite estimar disponibilidad efectiva percibida.
+    - ~arvault.exchange.failed_transactions~ (*counter*): operaciones fallidas; se usa con la anterior para ver el ratio de fallas.
+  - ~arvault.exchange.base_amount~ / ~arvault.exchange.counter_amount~ (*gauge*): montos de la operación en moneda base y contraparte. Ayudan a entender volumen económico y detectar outliers.
+  - ~arvault.exchange.rate~ (*gauge*): tasa aplicada al momento del intercambio. Útil para auditar cambios de precio y drift respecto de configuraciones.
+  - ~arvault.volume.by_currency~ (*gauge*): volumen por ~currency~ y ~operation~ (~buy/sell~). Indica monedas demandadas y patrones de demanda.
+  - ~arvault.volume.operations_count~ (*counter*): cantidad de operaciones por dimensión de volumen; complementa el gauge para ver frecuencia sin importar el monto.
+  - ~arvault.volume.net~ (*gauge*): balance neto por moneda (positivo en ~buy~, negativo en ~sell~). Sirve para monitorear exposición neta / liquidez.
+  - ~arvault.account.balance~ (*gauge*): balances reportados por cuenta/moneda. Útil para verificar disponibilidad de fondos y umbrales operativos.
+
+- Errores (Confiabilidad)
+  - ~arvault.errors.count~ (*counter*)
+
+Las métricas incluyen *tags* según el caso (p. ej., ~endpoint~, ~method~, ~status_code~, ~currency~, ~operation~, ~base_currency~, ~counter_currency~, ~success~, y metadatos globales ~service~, ~env~). Estas señales se usan luego para contrastar escenarios de carga y fundamentar observaciones sobre **Performance**, **Disponibilidad** y **Visibilidad**.
+
+*** DataDog (logs + métricas etiquetadas)
+
+Se habilitó **logging estructurado** y el envío de **métricas etiquetadas** compatibles con DogStatsD.
+
+- Logs JSON con ~winston~
+  - Formato: ~timestamp~, captura de ~errors({ stack: true })~, y ~defaultMeta~ (~service~, ~env~, ~version~).
+  - Registros implementados:
+    - ~logRequest~: método, URL/path, ~status_code~, ~response_time~, ~user_agent~, IP, ~request_id~.
+    - ~logValidationError~: errores de entrada (tipo, mensaje, ~endpoint~, ~request_data~).
+    - ~logSystemError~: fallas internas (mensaje, ~stack~, nombre de error, ~context~).
+    - ~logExchangeTransaction~: resultado de intercambio (ok/falla), IDs de cuentas, monedas, montos, ~exchange_rate~, mensaje de error si aplica.
+    - ~logPerformance~: duración de operaciones puntuales.
+    - ~logLifecycleEvent~: eventos de ciclo de vida (ej., ~startup~).
+
+- Métricas con *tags* (DogStatsD)
+  - Las métricas ~arvault.*~ anteriores se envían con *tags* (p. ej., ~endpoint~, ~method~, ~status_code~, ~currency~, ~operation~, ~base_currency~, ~counter_currency~, ~success~, además de ~service~, ~env~, ~version~).
+  - Esto permite segmentar los indicadores de **Performance** y **Visibilidad** por dimensiones de negocio y técnicas.
 
 ** Generación de carga
 

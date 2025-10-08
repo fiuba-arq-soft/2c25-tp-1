@@ -10,6 +10,7 @@ import {
   getLog,
 } from "./redis.js";
 import routes from "./src/routes.js";
+import { exchange } from "./src/services/exchangeService.js";
 
 // Initialize Redis (idempotent single connection)
 await redisInit();

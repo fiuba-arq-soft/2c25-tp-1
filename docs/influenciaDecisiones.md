@@ -108,9 +108,3 @@ El sistema carece de un patrón de arquitectura claramente definido a nivel inte
   La arquitectura monolítica limita la posibilidad de migrar gradualmente a tecnologías más modernas o de reestructurar componentes de forma incremental.  
 
 En conjunto, esta ausencia de estructura arquitectónica limita la **mantenibilidad**, **evolutividad**, **testeabilidad** y **extensibilidad**, dificultando la gestión del ciclo de vida del software.
-
-
-
-
-
-

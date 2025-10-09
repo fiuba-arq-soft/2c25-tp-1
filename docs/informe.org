@@ -33,13 +33,24 @@
 
 * Introducción
 
-** Contexto (startup arVault).
+arVault es una startup fintech que opera una billetera digital con un enfoque en ofrecer tasas de cambio competitivas para operaciones entre distintas monedas. En un contexto donde la confianza del usuario es fundamental, la empresa se enfrenta al desafío de mejorar su servicio de cambio de divisas tras recibir múltiples reclamos por problemas de rendimiento y disponibilidad.
 
-** Objetivos del TP.
+El presente trabajo se enmarca en la necesidad de arVault de realizar una auditoría exhaustiva de su arquitectura actual para identificar oportunidades de mejora en los atributos de calidad del sistema. Este análisis resulta crucial para la empresa, ya que su capacidad de atraer nuevas inversiones depende directamente de la confiabilidad y desempeño de su plataforma.
 
-** Alcance del análisis.
+Los objetivos principales de este trabajo práctico son:
 
-* Atributos de calidad (QA) identificados
+1. Analizar la arquitectura actual del sistema de cambio de divisas.
+2. Identificar los atributos de calidad críticos para el negocio.
+3. Evaluar el impacto de las decisiones de diseño en dichos atributos.
+4. Proponer e implementar mejoras basadas en tácticas arquitectónicas.
+5. Medir y comparar el rendimiento antes y después de las modificaciones.
+
+El alcance del análisis abarca tanto aspectos técnicos como de negocio, considerando la infraestructura existente (Node.js, Express, Nginx, etc) y las herramientas de monitoreo implementadas (cAdvisor, StatsD, Graphite, Grafana). Se prestará especial atención a métricas clave como el volumen de operaciones por moneda y el neto de transacciones, tal como lo solicitó el fundador de arVault.
+
+Este informe documenta nuestro proceso de análisis, las decisiones tomadas y los resultados obtenidos, con el fin de proporcionar recomendaciones fundamentadas que permitan a arVault mejorar la calidad de su servicio y recuperar la confianza de sus usuarios e inversores.
+
+
+* Atributos de calidad (QA) claves identificados
 
 
 ** Disponibilidad

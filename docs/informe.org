@@ -257,13 +257,11 @@ p_cadvisor_host --> p_cadvisor_docker
 [[file:assets/componentes.png]]
 
 
-** Crítica a arquitectura base.
-
 * Metodología de pruebas
 Con el propósito de realizar pruebas y tener una medición de los atributos de calidad relevantes del sistema, se realizaron pruebas de carga sobre la aplicación mediante la herramienta Artillery y junto con StatsD, Graphite, Grafana y Datadog, se realiza la recolección y visualización de los datos de desempeño, incluyendo métricas como tiempos de respuesta, errores y uso de recursos, lo que permite evaluar la capacidad del sistema para manejar diferentes niveles de carga y detectar posibles cuellos de botella.
 ** Set up para recolección y visualización de datos
 
-*** Graphit + Grafana + StatsD (métricas custom)
+*** Graphite + Grafana + StatsD (métricas custom)
 
 En la app se agregaron métricas propias con ~hot-shots~ (cliente StatsD/DogStatsD) usando el prefijo ~arvault.~. Se emiten en dos puntos: (a) middleware HTTP para latencia y throughput, y (b) lógica de negocio del exchange para volumen y estado de las operaciones.
 
@@ -358,7 +356,7 @@ Un par de tarjetas con lo esencial: throughput, total de transacciones y total d
 
 ** Generación de carga
 
-Con propósito de observar la aplicación se generaron diferentes escenarios de carga, uno de baja carga con el propósito de observar el comportamiento de la API en un momento de uso con baja intensidad y otro de uso con alta intensidad representando los posibles escenarios en los que se encuentre la aplicación en producción. 
+Con propósito de observar la aplicación se generaron diferentes escenarios de carga, uno de baja carga con el propósito de observar el comportamiento de la API en un momento de uso con baja intensidad y otro de uso con alta intensidad representando los posibles escenarios en los que se encuentre la aplicación en producción.
 
 Los escenarios se aplicarán a cada uno de los endpoints, si es un endpoint GET, se generan muchas consultas a la API por el mismo endpoint, mientras que en casos de PUT se interactúa con las distintas monedas generando una carga más variada y simulando una situación lo más realista posible.
 
@@ -393,13 +391,13 @@ phases:
 
 Por lo tanto ambas cargas serán aplicadas a los endpoints considerando la variabilidad de los datos en el caso que sea necesario
 
-** Graficos 
+** Graficos
 
-En líneas generales se presentan 4 gráficos: 
+En líneas generales se presentan 4 gráficos:
 
-- **Scenarios launched (stacked)**: Este gráfico muestra los escenarios que se están ejecutando, en caso de ser la prueba de un método GET, no habrá variabilidad en los casos, por otro lado, cuando se trate de un POST o un PUT se podrán apreciar la variabilidad en los escenarios de prueba configurados 
-- **Requests state (stacked)**: Muestra el estado de las request, se grafican principalmente los escenarios en los cuales la API contesta a la request con un código 200, en algunos casos, se apreciarán la graficación de errores los cuales consideran: *ECONNRESET* y *ETIMEDOUT*  
-- **Request time (client-side)**: Que permite obtener una magnitud de la performance del producto como también del tiempo que toma a la aplicación en contestar una request 
+- **Scenarios launched (stacked)**: Este gráfico muestra los escenarios que se están ejecutando, en caso de ser la prueba de un método GET, no habrá variabilidad en los casos, por otro lado, cuando se trate de un POST o un PUT se podrán apreciar la variabilidad en los escenarios de prueba configurados
+- **Requests state (stacked)**: Muestra el estado de las request, se grafican principalmente los escenarios en los cuales la API contesta a la request con un código 200, en algunos casos, se apreciarán la graficación de errores los cuales consideran: *ECONNRESET* y *ETIMEDOUT*
+- **Request time (client-side)**: Que permite obtener una magnitud de la performance del producto como también del tiempo que toma a la aplicación en contestar una request
 - **Resources**: Este gráfico permite observar los recursos utilizados por el ordenador tales como: CPU y memoria RAM
 
 Estos gráficos no permiten tener una visibilidad amplia y global sobre el funcionamiento de la aplicación como también entender el comportamiento de los *Atributos de calidad* claves de la aplicación
@@ -408,7 +406,7 @@ Estos gráficos no permiten tener una visibilidad amplia y global sobre el funci
 
 ** Prueba con carga baja
 
-Se procede a presentar los datos de pruebas recolectados en un escenario de baja carga 
+Se procede a presentar los datos de pruebas recolectados en un escenario de baja carga
 
 *** Análisis del endpoint GET Rates
 
@@ -418,7 +416,7 @@ Por la simplicidad del endpoint y dada la falta de parámetros que tiene el mism
 
 [[file:./assets/ratesstate.png]]
 
-De los datos se puede extraer que en un escenario de baja carga de la API, se observa que la totalidad de las consultas fue contestada de manera satisfactoria 
+De los datos se puede extraer que en un escenario de baja carga de la API, se observa que la totalidad de las consultas fue contestada de manera satisfactoria
 
 [[file:./assets/ratesresponsetime.png]]
 
@@ -426,9 +424,9 @@ De este gráfico se puede extraer información sobre el tiempo de procesamiento 
 
 [[file:./assets/ratesresources.png]]
 
-Finalmente la cantidad de recursos del ordenador usadas para procesar las consultas no parece ser representativa, se puede concluir que en escenarios de baja intensidad la API responde de manera eficiente y tanto la performance percibida por el usuario como la disponibilidad no se ven afectados en estos escenarios 
+Finalmente la cantidad de recursos del ordenador usadas para procesar las consultas no parece ser representativa, se puede concluir que en escenarios de baja intensidad la API responde de manera eficiente y tanto la performance percibida por el usuario como la disponibilidad no se ven afectados en estos escenarios
 
-*** Análisis del endpoint PUT rates 
+*** Análisis del endpoint PUT rates
 
 [[file:./assets/putratesscenarios.png]]
 
@@ -436,7 +434,7 @@ Al tratarse de un método PUT, la variabilidad entre los diferentes tipos de mon
 
 [[file:./assets/putratesstate.png]]
 
-Como en el caso anterior, todas las peticiones al servidor respondieron de manera satisfactoria a los clientes 
+Como en el caso anterior, todas las peticiones al servidor respondieron de manera satisfactoria a los clientes
 
 [[file:./assets/putratesresponsetime.png]]
 
@@ -444,21 +442,21 @@ Una vez más se puede apreciar la tendencia a que el uso de recursos (en este ca
 
 [[file:./assets/putratesresources.png]]
 
-Nuevamente se observa que no existe un uso excesivo de los recursos del ordenador, por lo tanto, en escenarios de baja intensidad el endpoint contesta de manera satisfactoria a las transacciones 
+Nuevamente se observa que no existe un uso excesivo de los recursos del ordenador, por lo tanto, en escenarios de baja intensidad el endpoint contesta de manera satisfactoria a las transacciones
 
 *** Análisis del endpoint POST exchange
 
 [[file:./assets/exchangescenario.png]]
 
-Como en el caso del endpoint anterior, se agrega variabilidad en los escenarios de prueba para simular de manera más realista el escenario de la aplicación que se encuentra en producción, los escenarios están dispuestos que ocurran de manera equiprobable 
+Como en el caso del endpoint anterior, se agrega variabilidad en los escenarios de prueba para simular de manera más realista el escenario de la aplicación que se encuentra en producción, los escenarios están dispuestos que ocurran de manera equiprobable
 
 [[file:./assets/exchangestatus.png]]
 
-Todos los POST fueron realizados de manera exitosa sin presentar ningún problema en la aplicación 
+Todos los POST fueron realizados de manera exitosa sin presentar ningún problema en la aplicación
 
 [[file:./assets/exchangeresponsetime.png]]
 
-A comparación de los otros endpoints analizados, es evidente que la finalización de esta tarea tiene un orden de magnitud superior a los otros casos, véase que en las pruebas anteriores el máximo de los tiempos de ejecución se encontraba alrededor de los 30 ms mientras que la media se encontraba alrededor de los 20 ms, para este endpoint los tiempos de ejecución se van hasta el rango de los 600 - 800 ms. Esta prueba permite identificar que este endpoint puede ser un posible cuello de botella en un caso de alto volumen de transacciones 
+A comparación de los otros endpoints analizados, es evidente que la finalización de esta tarea tiene un orden de magnitud superior a los otros casos, véase que en las pruebas anteriores el máximo de los tiempos de ejecución se encontraba alrededor de los 30 ms mientras que la media se encontraba alrededor de los 20 ms, para este endpoint los tiempos de ejecución se van hasta el rango de los 600 - 800 ms. Esta prueba permite identificar que este endpoint puede ser un posible cuello de botella en un caso de alto volumen de transacciones
 
 [[file:./assets/exchangeresources.png]]
 
@@ -484,23 +482,23 @@ Observando el resultado de la prueba se observa que a medida que la carga va cre
 
 [[file:./assets/ratesfresponsetime.png]]
 
-Tambien se aprecia que a medida que aparecen casos de error los tiempos de respuestas en los clientes empiezan a escalar llegando a alcanzar un pico de casi 10 segundos para conseguir responder a una consulta. Esto es un claro indicio de problemas de performance y de disponibilidad de la aplicacion, atributos que han sido establecidos como clave para esta arquitectura 
+Tambien se aprecia que a medida que aparecen casos de error los tiempos de respuestas en los clientes empiezan a escalar llegando a alcanzar un pico de casi 10 segundos para conseguir responder a una consulta. Esto es un claro indicio de problemas de performance y de disponibilidad de la aplicacion, atributos que han sido establecidos como clave para esta arquitectura
 
 [[file:./assets/ratesfresources.png]]
 
 Se observa que el modulo de la api no presenta uso excesivo de los recursos del ordenador dada la cantidad de clientes que intentan realizar consultas
 
-*** Análisis del endpoint PUT rates 
+*** Análisis del endpoint PUT rates
 
 Ahora se analiza el endpoint que realiza put de los rates a la API
 
 [[file:./assets/putratesfscenarios.png]]
 
-En este gráfico se aprecia la variabilidad de los casos de prueba que se realizaron, ya que el endpoint PUT permite modificar tasas para diferentes pares de monedas. 
+En este gráfico se aprecia la variabilidad de los casos de prueba que se realizaron, ya que el endpoint PUT permite modificar tasas para diferentes pares de monedas.
 
 [[file:./assets/putratesfstate.png]]
 
-Bajo carga alta, se observa que inicialmente todas las requests son procesadas correctamente, pero a medida que aumenta la intensidad, comienzan a aparecer errores de tipo timeout y cierre inesperado de conexiones, similar a lo observado en el endpoint GET. Esto evidencia que el sistema, en su arquitectura base, no logra sostener la disponibilidad y performance cuando la concurrencia crece. 
+Bajo carga alta, se observa que inicialmente todas las requests son procesadas correctamente, pero a medida que aumenta la intensidad, comienzan a aparecer errores de tipo timeout y cierre inesperado de conexiones, similar a lo observado en el endpoint GET. Esto evidencia que el sistema, en su arquitectura base, no logra sostener la disponibilidad y performance cuando la concurrencia crece.
 
 [[file:./assets/putratesfresponsetime.png]]
 
@@ -758,9 +756,9 @@ Con la propuesta de mejora que incluye balanceo de carga entre tres nodos y Post
 * Resultados empíricos- Propuestas de mejora
 ** Propuesta - Valkey/Redis
 
-En las propuestas de mejoras se busca principalmente mejorar la experiencia de los usuarios en escenarios de alta carga sobre la aplicación, dadas las conclusiones resultantes de la sección 5, se analizarán la evolución de las propuestas únicamente en escenarios de alta carga para la aplicación. 
+En las propuestas de mejoras se busca principalmente mejorar la experiencia de los usuarios en escenarios de alta carga sobre la aplicación, dadas las conclusiones resultantes de la sección 5, se analizarán la evolución de las propuestas únicamente en escenarios de alta carga para la aplicación.
 
-Se presentan los resultados de haber integrado Valkey en la aplicación: 
+Se presentan los resultados de haber integrado Valkey en la aplicación:
 
 *** Rates
 
@@ -776,10 +774,31 @@ Se presentan los resultados de haber integrado Valkey en la aplicación:
 [[file:./assets/valkey-exchangeresponsetime.png]]
 [[file:./assets/valkey-exchangeresources.png]]
 
+
 ** Propuesta - PostgreSQL y balanceo de carga efectivo
 
+[[file:./assets/postgres-get-rates-scenarios-launched.png]]
+
+[[file:./assets/postgres-requests-state.png]]
+
+El escenario de pruebas para el endpoint *GET RATES* evidencia una mejora notable en la estabilidad general del sistema tras
+la implementación de PostgreSQL junto con un balanceador de carga con 3 nodos.
+
+En los gráficos se observa que la cantidad de escenarios lanzados alcanza y mantiene un nivel estable cercano a las 4k
+solicitudes por segundo, sin interrupciones ni caídas, lo que refleja una mayor capacidad para sostener carga elevada. En el
+estado de las solicitudes, los errores se reducen significativamente, mostrando que la gran mayoría de las peticiones se
+completan con éxito, eliminando los fallos frecuentes de conexión y timeout observados en la versión base.
+
+[[file:./assets/postgres-response-time.png]]
+
+Sin embargo, los tiempos de respuesta aumentan de manera considerable, llegando a valores promedio entre 3 y 7 segundos en
+momentos de máxima carga. Este incremento indica que, aunque el sistema logra procesar más solicitudes de forma confiable, el
+costo de coordinación entre instancias y las transacciones ACID de PostgreSQL introduce una mayor latencia.
+
+En conclusión, la solución basada en PostgreSQL y balanceo de carga mejora la **disponibilidad y confiabilidad** del sistema
+bajo alta concurrencia, a costa de un **mayor tiempo de respuesta promedio** (trade off), representando un compromiso razonable en favor
+de la estabilidad y la consistencia de los datos.
+
 * Trade-offs detectados.
-
 * Pedido Adicional (Volumen de transacciones por moneda)
-
 * Conclusiones

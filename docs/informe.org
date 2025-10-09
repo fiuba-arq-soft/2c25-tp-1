@@ -229,9 +229,100 @@ p_cadvisor_host --> p_cadvisor_docker
 
 ** Recolección de datos
 
-*** StatsD + Graphit + Grafana
+*** Graphit + Grafana
 
-*** DataDog
+*** StatsD (métricas custom)
+
+En la app se agregaron métricas propias con ~hot-shots~ (cliente StatsD/DogStatsD) usando el prefijo ~arvault.~. Se emiten en dos puntos: (a) middleware HTTP para latencia y throughput, y (b) lógica de negocio del exchange para volumen y estado de las operaciones.
+
+- HTTP (Performance)
+  - ~arvault.api.response_time~ (*timing*, ms): latencia por request medida en el middleware. Útil para ver p50/p95/p99 y detectar degradaciones bajo carga.
+  - ~arvault.api.requests~ (*counter*): throughput de la API. Sirve para correlacionar picos de tráfico con cambios en latencia y calcular tasas (p. ej., error rate).
+
+- Negocio (Visibilidad, Disponibilidad proxy)
+  - ~arvault.exchange.transactions~ (*counter*): total de operaciones de intercambio. Base para segmentar por par de monedas y estado.
+    - ~arvault.exchange.successful_transactions~ (*counter*): operaciones exitosas; permite estimar disponibilidad efectiva percibida.
+    - ~arvault.exchange.failed_transactions~ (*counter*): operaciones fallidas; se usa con la anterior para ver el ratio de fallas.
+  - ~arvault.exchange.base_amount~ / ~arvault.exchange.counter_amount~ (*gauge*): montos de la operación en moneda base y contraparte. Ayudan a entender volumen económico y detectar outliers.
+  - ~arvault.exchange.rate~ (*gauge*): tasa aplicada al momento del intercambio. Útil para auditar cambios de precio y drift respecto de configuraciones.
+  - ~arvault.volume.by_currency~ (*gauge*): volumen por ~currency~ y ~operation~ (~buy/sell~). Indica monedas demandadas y patrones de demanda.
+  - ~arvault.volume.operations_count~ (*counter*): cantidad de operaciones por dimensión de volumen; complementa el gauge para ver frecuencia sin importar el monto.
+  - ~arvault.volume.net~ (*gauge*): balance neto por moneda (positivo en ~buy~, negativo en ~sell~). Sirve para monitorear exposición neta / liquidez.
+  - ~arvault.account.balance~ (*gauge*): balances reportados por cuenta/moneda. Útil para verificar disponibilidad de fondos y umbrales operativos.
+
+- Errores (Confiabilidad)
+  - ~arvault.errors.count~ (*counter*)
+
+Las métricas incluyen *tags* según el caso (p. ej., ~endpoint~, ~method~, ~status_code~, ~currency~, ~operation~, ~base_currency~, ~counter_currency~, ~success~, y metadatos globales ~service~, ~env~). Estas señales se usan luego para contrastar escenarios de carga y fundamentar observaciones sobre **Performance**, **Disponibilidad** y **Visibilidad**.
+
+*** DataDog (logs + métricas etiquetadas)
+
+Se habilitó **logging estructurado** y el envío de **métricas etiquetadas** compatibles con DogStatsD.
+
+- Logs JSON con ~winston~
+  - Formato: ~timestamp~, captura de ~errors({ stack: true })~, y ~defaultMeta~ (~service~, ~env~, ~version~).
+  - Registros implementados:
+    - ~logRequest~: método, URL/path, ~status_code~, ~response_time~, ~user_agent~, IP, ~request_id~.
+    - ~logValidationError~: errores de entrada (tipo, mensaje, ~endpoint~, ~request_data~).
+    - ~logSystemError~: fallas internas (mensaje, ~stack~, nombre de error, ~context~).
+    - ~logExchangeTransaction~: resultado de intercambio (ok/falla), IDs de cuentas, monedas, montos, ~exchange_rate~, mensaje de error si aplica.
+    - ~logPerformance~: duración de operaciones puntuales.
+    - ~logLifecycleEvent~: eventos de ciclo de vida (ej., ~startup~).
+
+- Métricas con *tags* (DogStatsD)
+  - Las métricas ~arvault.*~ anteriores se envían con *tags* (p. ej., ~endpoint~, ~method~, ~status_code~, ~currency~, ~operation~, ~base_currency~, ~counter_currency~, ~success~, además de ~service~, ~env~, ~version~).
+  - Esto permite segmentar los indicadores de **Performance** y **Visibilidad** por dimensiones de negocio y técnicas.
+
+*** DataDog (dashboard)
+
+Armamos un dashboard simple para entender las fallas criticas del servicio y ademas entender el dominio del negocio. La idea es cubrir tres frentes a la vez: **Performance** (qué tan rápido respondemos), **Disponibilidad/Confiabilidad** (qué tan seguido falla) y **Visibilidad** (qué parte del negocio está más activa).
+
+**** Requests per endpoint
+Cuántas llamadas recibe cada ruta. Con esto vemos cuáles son las más usadas y dónde conviene poner foco de capacidad.
+#+CAPTION: Requests por endpoint
+[[file:assets/db-02-requests-by-endpoint.png]]
+
+**** Status Codes Distribution
+La mezcla de 200/4xx/5xx a lo largo del tiempo. Es nuestro termómetro de salud: muchos 5xx = algo se rompió del lado servidor; pico de 4xx = validaciones/UX para revisar.
+#+CAPTION: Distribución de status codes
+[[file:assets/db-03-status-codes.png]]
+
+**** Exchange – Success rate
+Porcentaje de transacciones que salen bien vs. fallan. Cuando baja, impacta directo al negocio y hay que mirar lógica y dependencias.
+#+CAPTION: Tasa de éxito de transacciones de exchange
+[[file:assets/db-04-exchange-success-rate.png]]
+
+**** Exchange – Total transactions
+Volumen bruto de operaciones. Útil para ver actividad, comparar días y estimar capacidad necesaria.
+#+CAPTION: Total de transacciones de exchange
+[[file:assets/db-05-exchange-total.png]]
+
+**** Volume by currency
+Cuánta actividad concentra cada moneda (USD, ARS, EUR, …). Ayuda con liquidez y prioridades: dónde hay más movimiento, ahí hay más riesgo/atención.
+#+CAPTION: Volumen por moneda
+[[file:assets/db-06-volume-by-currency.png]]
+
+**** Net volume by currency
+Compras menos ventas por moneda. Si el neto de USD es muy negativo, estamos vendiendo más de lo que compramos: ojo con la posición.
+#+CAPTION: Volumen neto por moneda
+[[file:assets/db-07-net-volume-by-currency.png]]
+
+**** Exchange rates
+Las tasas vigentes por par. Sirve para chequear precios, detectar volatilidad y cuidar márgenes.
+#+CAPTION: Tasas de cambio por par
+[[file:assets/db-08-exchange-rates.png]]
+
+**** Error count por tipo
+Los errores agrupados por categoría (p. ej., ~validation_error~, ~exchange_failed~). Da pista rápida de dónde conviene atacar: UX/validaciones o lógica interna.
+#+CAPTION: Conteo de errores por tipo
+[[file:assets/db-10-error-count-by-type.png]]
+
+
+**** KPIs de resumen
+Un par de tarjetas con lo esencial: throughput, total de transacciones y total de errores. Es la vista “de un vistazo” para status diario y alertas.
+#+CAPTION: KPIs de resumen (requests, transacciones, errores)
+[[file:assets/db-12-15-summary-kpis.png]]
+
 
 ** Generación de carga
 
